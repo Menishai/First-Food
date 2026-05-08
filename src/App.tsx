@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { FoodProvider, useFoodContext } from './context';
 import { tipsData } from './data';
@@ -48,6 +48,10 @@ const Dashboard = () => {
   const [sortOrder, setSortOrder] = useState<'name-asc' | 'name-desc' | 'status-tried' | 'status-untried' | 'completed'>('name-asc');
   const [isSortMenuOpen, setIsSortMenuOpen] = useState(false);
   const [selectedCalendarDate, setSelectedCalendarDate] = useState<Date | null>(null);
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [activeTab]);
 
   const categories: (Category | 'הכל' | 'רגישויות')[] = ['הכל', 'ירקות', 'פירות', 'חלבונים', 'אלרגנים', 'דגנים', 'תיבול', 'רגישויות'];
 
@@ -109,8 +113,27 @@ const Dashboard = () => {
     food.attempts.map(attempt => ({ ...attempt, foodName: food.name, foodIcon: food.icon, foodId: food.id }))
   ).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
+  const tabs: ViewTab[] = ['home', 'foods', 'calendar', 'settings'];
+
+  const handleDragEnd = (event: any, info: any) => {
+    const swipeThreshold = 50;
+    const currentIndex = tabs.indexOf(activeTab);
+
+    // Swipe left (next tab) in RTL, swipe direction is flipped?
+    // Actually info.offset.x > 0 means swiping to the RIGHT.
+    // In LTR: Swipe right (offset > 0) usually means "go back" (previous index).
+    // In RTL: Swipe right (offset > 0) usually means "go forward" (next index)? 
+    // Let's test standard logic first.
+    
+    if (info.offset.x > swipeThreshold && currentIndex > 0) {
+      setActiveTab(tabs[currentIndex - 1]);
+    } else if (info.offset.x < -swipeThreshold && currentIndex < tabs.length - 1) {
+      setActiveTab(tabs[currentIndex + 1]);
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-brand-cream font-sans pb-32 text-slate-800 antialiased" dir="rtl">
+    <div className="min-h-screen bg-brand-cream font-sans pb-32 text-slate-800 antialiased overflow-x-hidden" dir="rtl">
       {/* Dynamic Header based on tab */}
       <header className="max-w-5xl mx-auto pt-8 px-6 mb-6">
         <div className="flex items-center justify-between">
@@ -158,7 +181,14 @@ const Dashboard = () => {
         </div>
       </header>
 
-      <main className="max-w-5xl mx-auto px-4 pb-4">
+      <motion.main 
+        key={activeTab}
+        drag="x"
+        dragConstraints={{ left: 0, right: 0 }}
+        dragElastic={0.1}
+        onDragEnd={handleDragEnd}
+        className="max-w-5xl mx-auto px-4 pb-4 touch-pan-y"
+      >
         {/* HOME VIEW */}
         {activeTab === 'home' && (
           <div className="flex flex-col gap-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -544,7 +574,7 @@ const Dashboard = () => {
              </div>
           </div>
         )}
-      </main>
+      </motion.main>
 
       {/* Modern Bottom Navbar Redesigned */}
       <nav className="fixed bottom-6 left-1/2 -translate-x-1/2 w-[85%] max-w-md bg-slate-900 border border-slate-800 shadow-[0_10px_30px_rgba(0,0,0,0.3)] rounded-full p-1.5 flex items-center justify-between z-[100]">

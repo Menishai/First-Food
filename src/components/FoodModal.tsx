@@ -207,7 +207,7 @@ export const FoodModal: React.FC<FoodModalProps> = ({ food, onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-[150] flex items-end sm:items-center justify-center p-4 bg-slate-900/40 backdrop-blur-md sm:p-0">
+    <div className="fixed inset-0 z-[150] flex items-end sm:items-center justify-center p-4 sm:p-0 bg-slate-900/40 backdrop-blur-md overflow-x-hidden overflow-y-auto">
       <motion.div 
         ref={modalRef}
         initial={{ y: "100%" }}
