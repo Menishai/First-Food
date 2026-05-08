@@ -59,6 +59,17 @@ const Dashboard = () => {
     window.scrollTo(0, 0);
   }, [activeTab]);
 
+  useEffect(() => {
+    if (isAnyModalOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isAnyModalOpen]);
+
   const categories: (Category | 'הכל' | 'רגישויות')[] = ['הכל', 'ירקות', 'פירות', 'חלבונים', 'אלרגנים', 'דגנים', 'תיבול', 'רגישויות'];
 
   let filteredFoods = selectedCategory === 'הכל' 
@@ -167,10 +178,10 @@ const Dashboard = () => {
     // In RTL: Swipe right (offset > 0) usually means "go forward" (next index)? 
     // Let's test standard logic first.
     
-    if (info.offset.x > swipeThreshold && currentIndex > 0) {
-      setActiveTab(tabs[currentIndex - 1]);
-    } else if (info.offset.x < -swipeThreshold && currentIndex < tabs.length - 1) {
+    if (info.offset.x > swipeThreshold && currentIndex < tabs.length - 1) {
       setActiveTab(tabs[currentIndex + 1]);
+    } else if (info.offset.x < -swipeThreshold && currentIndex > 0) {
+      setActiveTab(tabs[currentIndex - 1]);
     }
   };
 
@@ -226,6 +237,7 @@ const Dashboard = () => {
       <motion.main 
         key={activeTab}
         drag={isAnyModalOpen ? false : "x"}
+        dragListener={!isAnyModalOpen}
         dragConstraints={{ left: 0, right: 0 }}
         dragElastic={0.1}
         onDragEnd={handleDragEnd}
