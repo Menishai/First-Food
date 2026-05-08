@@ -15,17 +15,13 @@ export const GuidelinesModal: React.FC<GuidelinesModalProps> = ({ onClose }) => 
       exit={{ opacity: 0 }}
       className="fixed inset-0 z-[150] flex items-center justify-center bg-slate-900/40 backdrop-blur-md overflow-x-hidden overflow-y-auto" 
       dir="rtl"
+      onClick={(e) => e.target === e.currentTarget && onClose()}
     >
-      <div 
-        className="absolute inset-0 z-0" 
-        onClick={onClose}
-      />
-      
       <motion.div 
         initial={{ scale: 0.95, opacity: 0, y: 15 }}
         animate={{ scale: 1, opacity: 1, y: 0 }}
         exit={{ scale: 0.95, opacity: 0, y: 10 }}
-        className="bg-brand-cream w-full max-w-md rounded-2xl sm:rounded-3xl shadow-2xl flex flex-col max-h-[80vh] relative z-10 overflow-hidden border border-brand-sand m-4"
+        className="bg-brand-cream w-full max-w-md rounded-2xl sm:rounded-3xl shadow-2xl flex flex-col max-h-[80vh] relative z-10 overflow-hidden border border-brand-sand m-4 touch-pan-y"
       >
         <div className="px-6 py-4 flex justify-between items-center bg-white border-b border-brand-sand relative">
           <div className="flex items-center gap-3">

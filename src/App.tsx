@@ -131,10 +131,10 @@ const Dashboard = () => {
     // In RTL: Swipe right (offset > 0) usually means "go forward" (next index)? 
     // Let's test standard logic first.
     
-    if (info.offset.x > swipeThreshold && currentIndex < tabs.length - 1) {
-      setActiveTab(tabs[currentIndex + 1]);
-    } else if (info.offset.x < -swipeThreshold && currentIndex > 0) {
+    if (info.offset.x > swipeThreshold && currentIndex > 0) {
       setActiveTab(tabs[currentIndex - 1]);
+    } else if (info.offset.x < -swipeThreshold && currentIndex < tabs.length - 1) {
+      setActiveTab(tabs[currentIndex + 1]);
     }
   };
 
