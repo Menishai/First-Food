@@ -52,8 +52,10 @@ const Dashboard = () => {
   const [isDiarySortMenuOpen, setIsDiarySortMenuOpen] = useState(false);
   const [diarySearchQuery, setDiarySearchQuery] = useState('');
   const [diaryDateRange, setDiaryDateRange] = useState<'all' | '7days' | '30days' | 'month'>('all');
+  const [progressListType, setProgressListType] = useState<'הושלם' | 'בתהליך' | null>(null);
+  const [progressListCategory, setProgressListCategory] = useState<Category | null>(null);
 
-  const isAnyModalOpen = !!selectedFoodId || isGuidelinesOpen || isCreateFoodModalOpen;
+  const isAnyModalOpen = !!selectedFoodId || isGuidelinesOpen || isCreateFoodModalOpen || !!progressListType;
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -250,14 +252,33 @@ const Dashboard = () => {
              <div className="bg-[#E9F3E5] rounded-[3rem] p-8 border border-[#D8E9D2] relative overflow-hidden shadow-sm">
                 <div className="relative z-10">
                   <div className="flex justify-between items-start mb-8">
-                    <div>
-                      <h3 className="font-serif font-bold text-3xl text-brand-sage leading-none mb-3">מסע הטעימות</h3>
-                      <p className="text-brand-olive/70 text-sm font-medium">השלמת {completedCount} מזונות עד כה</p>
-                    </div>
-                    <div className="bg-white/60 backdrop-blur-md p-4 rounded-[2rem] flex items-center gap-3 border border-white/50 shadow-sm">
-                       <CheckCircle2 className="text-brand-sage" size={24} />
-                       <span className="font-bold text-brand-sage text-lg">{Math.round((completedCount/foods.length)*100)}%</span>
-                    </div>
+                    <motion.div 
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => setProgressListType('הושלם')}
+                      className="cursor-pointer group"
+                    >
+                      <h3 className="font-serif font-bold text-3xl text-brand-sage leading-none mb-3 group-hover:text-brand-olive transition-colors">מסע הטעימות</h3>
+                      <p className="text-brand-olive/70 text-sm font-medium flex items-center gap-1.5">
+                        השלמת {completedCount} מזונות עד כה
+                        <ChevronLeft size={14} className="opacity-40 group-hover:opacity-100 transition-opacity" />
+                      </p>
+                    </motion.div>
+                    <motion.div 
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => setProgressListType('בתהליך')}
+                      className="bg-white/60 backdrop-blur-md p-4 rounded-[2rem] flex items-center gap-3 border border-white/50 shadow-sm cursor-pointer group"
+                    >
+                       <div className="flex flex-col items-center">
+                         <span className="text-[9px] font-black uppercase text-brand-sage leading-none mb-1 opacity-60">בתהליך</span>
+                         <span className="font-bold text-brand-sage text-lg">{inProgressCount}</span>
+                       </div>
+                       <div className="w-px h-8 bg-brand-sage/20" />
+                       <div className="flex flex-col items-center">
+                         <span className="text-[9px] font-black uppercase text-brand-sage leading-none mb-1 opacity-60">הושלם</span>
+                         <span className="font-bold text-brand-sage text-lg">{Math.round((completedCount/foods.length)*100)}%</span>
+                       </div>
+                    </motion.div>
                   </div>
                   
                   <div className="w-full h-5 bg-white/40 rounded-full overflow-hidden border border-white/30 mb-8 backdrop-blur-sm">
@@ -271,16 +292,25 @@ const Dashboard = () => {
 
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                      {[
-                       { label: 'ירקות', icon: '🥦', color: 'bg-green-50', text: 'text-green-700', val: `${foods.filter(f=>f.category==='ירקות' && f.status === 'הושלם').length}/${foods.filter(f=>f.category==='ירקות').length}` },
-                       { label: 'פירות', icon: '🍎', color: 'bg-red-50', text: 'text-red-700', val: `${foods.filter(f=>f.category==='פירות' && f.status === 'הושלם').length}/${foods.filter(f=>f.category==='פירות').length}` },
-                       { label: 'אלרגנים', icon: '🥜', color: 'bg-amber-50', text: 'text-amber-700', val: `${foods.filter(f=>f.category==='אלרגנים' && f.status === 'הושלם').length}/${foods.filter(f=>f.category==='אלרגנים').length}` },
-                       { label: 'חלבונים', icon: '🍗', color: 'bg-blue-50', text: 'text-blue-700', val: `${foods.filter(f=>f.category==='חלבונים' && f.status === 'הושלם').length}/${foods.filter(f=>f.category==='חלבונים').length}` },
+                       { label: 'ירקות', icon: '🥦', color: 'bg-green-50', text: 'text-green-700', cat: 'ירקות', val: `${foods.filter(f=>f.category==='ירקות' && f.status === 'הושלם').length}/${foods.filter(f=>f.category==='ירקות').length}` },
+                       { label: 'פירות', icon: '🍎', color: 'bg-red-50', text: 'text-red-700', cat: 'פירות', val: `${foods.filter(f=>f.category==='פירות' && f.status === 'הושלם').length}/${foods.filter(f=>f.category==='פירות').length}` },
+                       { label: 'אלרגנים', icon: '🥜', color: 'bg-amber-50', text: 'text-amber-700', cat: 'אלרגנים', val: `${foods.filter(f=>f.category==='אלרגנים' && f.status === 'הושלם').length}/${foods.filter(f=>f.category==='אלרגנים').length}` },
+                       { label: 'חלבונים', icon: '🍗', color: 'bg-blue-50', text: 'text-blue-700', cat: 'חלבונים', val: `${foods.filter(f=>f.category==='חלבונים' && f.status === 'הושלם').length}/${foods.filter(f=>f.category==='חלבונים').length}` },
                      ].map((item, i) => (
-                       <div key={i} className="bg-white/50 border border-white/50 rounded-[2rem] p-4 flex flex-col items-center gap-1.5 shadow-sm">
+                       <motion.div 
+                         key={i} 
+                         whileHover={{ y: -2, backgroundColor: 'rgba(255,255,255,0.8)' }}
+                         whileTap={{ scale: 0.95 }}
+                         onClick={() => {
+                           setProgressListType('הושלם');
+                           setProgressListCategory(item.cat as Category);
+                         }}
+                         className="bg-white/50 border border-white/50 rounded-[2rem] p-4 flex flex-col items-center gap-1.5 shadow-sm cursor-pointer transition-all"
+                       >
                           <span className="text-2xl mb-1">{item.icon}</span>
                           <span className={`text-[11px] font-black uppercase tracking-tighter ${item.text}`}>{item.label}</span>
                           <span className="text-base font-bold text-brand-olive">{item.val}</span>
-                       </div>
+                       </motion.div>
                      ))}
                   </div>
                 </div>
@@ -760,6 +790,88 @@ const Dashboard = () => {
           <CreateFoodModal 
             onClose={() => setIsCreateFoodModalOpen(false)}
           />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {progressListType && (
+          <div 
+            className="fixed inset-0 z-[150] flex items-center justify-center bg-slate-900/40 backdrop-blur-md overflow-x-hidden overflow-y-auto"
+            onClick={(e) => {
+              if (e.target === e.currentTarget) {
+                setProgressListType(null);
+                setProgressListCategory(null);
+              }
+            }}
+            dir="rtl"
+          >
+            <motion.div 
+              initial={{ scale: 0.95, opacity: 0, y: 15 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 10 }}
+              className="bg-brand-cream w-full max-w-md rounded-2xl sm:rounded-3xl shadow-2xl flex flex-col max-h-[80vh] relative z-10 overflow-hidden border border-brand-sand m-4 touch-pan-y"
+            >
+              <div className="px-6 py-4 flex justify-between items-center bg-white border-b border-brand-sand">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-brand-cream rounded-xl flex items-center justify-center text-xl shadow-inner">
+                    {progressListCategory 
+                      ? (progressListCategory === 'ירקות' ? '🥦' : progressListCategory === 'פירות' ? '🍎' : progressListCategory === 'אלרגנים' ? '🥜' : '🍗')
+                      : (progressListType === 'הושלם' ? '🏆' : '⏳')
+                    }
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-serif font-black text-slate-800 leading-none mb-1">
+                      {progressListCategory ? `הושלם: ${progressListCategory}` : (progressListType === 'הושלם' ? 'מזונות שהושלמו' : 'מזונות בתהליך')}
+                    </h3>
+                    <p className="text-[10px] font-black text-slate-400 tracking-widest uppercase">
+                      {foods.filter(f => f.status === progressListType && (!progressListCategory || f.category === progressListCategory)).length} מזונות ברשימה
+                    </p>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => {
+                    setProgressListType(null);
+                    setProgressListCategory(null);
+                  }}
+                  className="w-10 h-10 flex items-center justify-center text-slate-400 hover:text-slate-800 transition-colors"
+                >
+                  <X size={24} />
+                </button>
+              </div>
+              
+              <div className="flex-1 overflow-y-auto p-4 custom-scrollbar">
+                <div className="flex flex-col gap-3">
+                  {foods.filter(f => f.status === progressListType && (!progressListCategory || f.category === progressListCategory)).length > 0 ? (
+                    foods.filter(f => f.status === progressListType && (!progressListCategory || f.category === progressListCategory)).map(food => (
+                      <div 
+                        key={food.id}
+                        onClick={() => {
+                          setSelectedFoodId(food.id);
+                          setProgressListType(null);
+                          setProgressListCategory(null);
+                        }}
+                        className="bg-white rounded-2xl p-4 border border-brand-sand/50 shadow-sm flex items-center gap-4 hover:border-brand-sage transition-all cursor-pointer active:scale-98"
+                      >
+                        <div className="w-12 h-12 bg-brand-cream/50 rounded-xl flex items-center justify-center text-2xl shrink-0">
+                          {food.icon}
+                        </div>
+                        <div className="flex flex-col flex-1 min-w-0">
+                          <span className="font-black text-slate-800 text-sm">{food.name}</span>
+                          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">{food.category}</span>
+                        </div>
+                        <ChevronLeft size={16} className="text-brand-sage" />
+                      </div>
+                    ))
+                  ) : (
+                    <div className="py-12 flex flex-col items-center justify-center text-center opacity-30">
+                       <span className="text-5xl mb-4">🍃</span>
+                       <p className="font-bold text-sm">אין פריטים ברשימה זו עדיין</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </motion.div>
+          </div>
         )}
       </AnimatePresence>
     </div>
