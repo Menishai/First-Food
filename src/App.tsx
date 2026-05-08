@@ -48,6 +48,8 @@ const Dashboard = () => {
   const [sortOrder, setSortOrder] = useState<'name-asc' | 'name-desc' | 'status-tried' | 'status-untried' | 'completed'>('name-asc');
   const [isSortMenuOpen, setIsSortMenuOpen] = useState(false);
   const [selectedCalendarDate, setSelectedCalendarDate] = useState<Date | null>(null);
+  const [diarySortOrder, setDiarySortOrder] = useState<'desc' | 'asc'>('desc');
+  const [isDiarySortMenuOpen, setIsDiarySortMenuOpen] = useState(false);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -111,7 +113,11 @@ const Dashboard = () => {
   // Get all history items for calendar view
   const allAttempts = foods.flatMap(food => 
     food.attempts.map(attempt => ({ ...attempt, foodName: food.name, foodIcon: food.icon, foodId: food.id }))
-  ).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  ).sort((a, b) => {
+    const dateA = new Date(a.date).getTime();
+    const dateB = new Date(b.date).getTime();
+    return diarySortOrder === 'desc' ? dateB - dateA : dateA - dateB;
+  });
 
   const tabs: ViewTab[] = ['home', 'foods', 'calendar', 'settings'];
 
@@ -125,10 +131,10 @@ const Dashboard = () => {
     // In RTL: Swipe right (offset > 0) usually means "go forward" (next index)? 
     // Let's test standard logic first.
     
-    if (info.offset.x > swipeThreshold && currentIndex > 0) {
-      setActiveTab(tabs[currentIndex - 1]);
-    } else if (info.offset.x < -swipeThreshold && currentIndex < tabs.length - 1) {
+    if (info.offset.x > swipeThreshold && currentIndex < tabs.length - 1) {
       setActiveTab(tabs[currentIndex + 1]);
+    } else if (info.offset.x < -swipeThreshold && currentIndex > 0) {
+      setActiveTab(tabs[currentIndex - 1]);
     }
   };
 
@@ -431,11 +437,53 @@ const Dashboard = () => {
             {allAttempts.length > 0 ? (
               <div className="flex flex-col gap-4">
                 <div className="flex justify-between items-center px-2">
-                  <h4 className="text-sm font-bold text-slate-500">
-                    {selectedCalendarDate 
-                      ? `טעימות מהתאריך ${selectedCalendarDate.toLocaleDateString('he-IL')}`
-                      : 'כל הטעימות האחרונות'}
-                  </h4>
+                  <div className="flex items-center gap-3">
+                    <h4 className="text-sm font-bold text-slate-500">
+                      {selectedCalendarDate 
+                        ? `טעימות מהתאריך ${selectedCalendarDate.toLocaleDateString('he-IL')}`
+                        : 'כל הטעימות האחרונות'}
+                    </h4>
+                    <div className="relative">
+                      <button 
+                        onClick={() => setIsDiarySortMenuOpen(!isDiarySortMenuOpen)}
+                        className={`p-1.5 rounded-lg transition-all ${isDiarySortMenuOpen ? 'bg-brand-sage text-white' : 'text-slate-400 hover:bg-brand-sand/30'}`}
+                      >
+                        <ListFilter size={16} />
+                      </button>
+                      <AnimatePresence>
+                        {isDiarySortMenuOpen && (
+                          <>
+                            <div className="fixed inset-0 z-40" onClick={() => setIsDiarySortMenuOpen(false)} />
+                            <motion.div 
+                              initial={{ opacity: 0, y: 5, scale: 0.95 }}
+                              animate={{ opacity: 1, y: 0, scale: 1 }}
+                              exit={{ opacity: 0, y: 5, scale: 0.95 }}
+                              className="absolute right-0 top-full mt-2 w-40 bg-white rounded-xl shadow-xl border border-brand-sand z-50 p-1 overflow-hidden"
+                            >
+                              <button
+                                onClick={() => { setDiarySortOrder('desc'); setIsDiarySortMenuOpen(false); }}
+                                className={`w-full text-right px-3 py-2 text-[10px] font-bold rounded-lg transition-colors flex items-center justify-between ${
+                                  diarySortOrder === 'desc' ? 'bg-brand-cream text-brand-sage' : 'text-slate-600 hover:bg-brand-cream'
+                                }`}
+                              >
+                                <span>הכי חדש תחילה</span>
+                                {diarySortOrder === 'desc' && <div className="w-1.5 h-1.5 rounded-full bg-brand-sage" />}
+                              </button>
+                              <button
+                                onClick={() => { setDiarySortOrder('asc'); setIsDiarySortMenuOpen(false); }}
+                                className={`w-full text-right px-3 py-2 text-[10px] font-bold rounded-lg transition-colors flex items-center justify-between ${
+                                  diarySortOrder === 'asc' ? 'bg-brand-cream text-brand-sage' : 'text-slate-600 hover:bg-brand-cream'
+                                }`}
+                              >
+                                <span>הכי ישן תחילה</span>
+                                {diarySortOrder === 'asc' && <div className="w-1.5 h-1.5 rounded-full bg-brand-sage" />}
+                              </button>
+                            </motion.div>
+                          </>
+                        )}
+                      </AnimatePresence>
+                    </div>
+                  </div>
                   {selectedCalendarDate && (
                     <button 
                       onClick={() => setSelectedCalendarDate(null)}

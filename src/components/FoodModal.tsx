@@ -207,14 +207,15 @@ export const FoodModal: React.FC<FoodModalProps> = ({ food, onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-[150] flex items-end sm:items-center justify-center p-4 sm:p-0 bg-slate-900/40 backdrop-blur-md overflow-x-hidden overflow-y-auto">
+    <div className="fixed inset-0 z-[150] flex items-end sm:items-center justify-center bg-slate-900/40 backdrop-blur-md overflow-x-hidden overflow-y-auto">
+      <div className="absolute inset-0 z-0" onClick={onClose} />
       <motion.div 
         ref={modalRef}
         initial={{ y: "100%" }}
         animate={{ y: 0 }}
         exit={{ y: "100%" }}
         transition={{ type: "spring", damping: 25, stiffness: 200 }}
-        className="bg-brand-cream w-full max-w-lg rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh] border border-brand-sand relative"
+        className="bg-brand-cream w-full max-w-lg rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh] border border-brand-sand relative z-10 m-0 sm:m-4"
       >
         {/* Header */}
         <div className="px-5 py-2.5 flex justify-between items-center bg-white relative border-b border-brand-sand">
