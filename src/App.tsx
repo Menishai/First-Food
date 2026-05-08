@@ -50,6 +50,8 @@ const Dashboard = () => {
   const [selectedCalendarDate, setSelectedCalendarDate] = useState<Date | null>(null);
   const [diarySortOrder, setDiarySortOrder] = useState<'desc' | 'asc'>('desc');
   const [isDiarySortMenuOpen, setIsDiarySortMenuOpen] = useState(false);
+  const [diarySearchQuery, setDiarySearchQuery] = useState('');
+  const [diaryDateRange, setDiaryDateRange] = useState<'all' | '7days' | '30days' | 'month'>('all');
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -111,9 +113,41 @@ const Dashboard = () => {
   };
 
   // Get all history items for calendar view
-  const allAttempts = foods.flatMap(food => 
+  let allAttempts = foods.flatMap(food => 
     food.attempts.map(attempt => ({ ...attempt, foodName: food.name, foodIcon: food.icon, foodId: food.id }))
-  ).sort((a, b) => {
+  );
+
+  // Apply diary filters
+  if (diarySearchQuery.trim()) {
+    allAttempts = allAttempts.filter(a => 
+      a.foodName.includes(diarySearchQuery.trim()) || 
+      a.reaction.includes(diarySearchQuery.trim()) ||
+      a.amount.includes(diarySearchQuery.trim())
+    );
+  }
+
+  if (diaryDateRange !== 'all') {
+    const now = new Date();
+    allAttempts = allAttempts.filter(a => {
+      const date = new Date(a.date);
+      if (diaryDateRange === '7days') {
+        const sevenDaysAgo = new Date();
+        sevenDaysAgo.setDate(now.getDate() - 7);
+        return date >= sevenDaysAgo;
+      }
+      if (diaryDateRange === '30days') {
+        const thirtyDaysAgo = new Date();
+        thirtyDaysAgo.setDate(now.getDate() - 30);
+        return date >= thirtyDaysAgo;
+      }
+      if (diaryDateRange === 'month') {
+        return date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear();
+      }
+      return true;
+    });
+  }
+
+  allAttempts = allAttempts.sort((a, b) => {
     const dateA = new Date(a.date).getTime();
     const dateB = new Date(b.date).getTime();
     return diarySortOrder === 'desc' ? dateB - dateA : dateA - dateB;
@@ -428,6 +462,40 @@ const Dashboard = () => {
         {/* CALENDAR VIEW */}
         {activeTab === 'calendar' && (
           <div className="flex flex-col gap-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            {/* Search & Filter for Diary */}
+            <div className="flex flex-col gap-4">
+              <div className="relative">
+                <Search size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-brand-olive/40" />
+                <input
+                  type="text"
+                  placeholder="חיפוש ביומן (שם מאכל, תגובה...)"
+                  value={diarySearchQuery}
+                  onChange={(e) => setDiarySearchQuery(e.target.value)}
+                  className="w-full bg-white border border-brand-sand rounded-2xl pr-10 pl-4 py-3 text-xs font-bold text-slate-700 shadow-sm focus:ring-2 focus:ring-brand-sage/10 focus:border-brand-sage/30 outline-none transition-all placeholder:text-slate-300"
+                />
+              </div>
+              <div className="flex gap-2 overflow-x-auto pb-1 no-scrollbar">
+                {[
+                  { id: 'all', label: 'כל הזמן' },
+                  { id: '7days', label: '7 ימים אחרונים' },
+                  { id: '30days', label: '30 ימים אחרונים' },
+                  { id: 'month', label: 'החודש הנוכחי' },
+                ].map((range) => (
+                  <button
+                    key={range.id}
+                    onClick={() => setDiaryDateRange(range.id as any)}
+                    className={`whitespace-nowrap px-4 py-2 rounded-xl text-[10px] font-black transition-all border uppercase tracking-widest ${
+                      diaryDateRange === range.id 
+                        ? 'bg-brand-sage text-white border-brand-sage shadow-md' 
+                        : 'bg-white text-slate-400 border-brand-sand hover:bg-brand-sand/30'
+                    }`}
+                  >
+                    {range.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
             <CalendarView 
               attempts={allAttempts} 
               selectedDate={selectedCalendarDate} 
