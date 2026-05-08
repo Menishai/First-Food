@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { FoodItem, Attempt, Status, Profile } from './types';
+import { FoodItem, Attempt, Status, Profile, Category } from './types';
 import { initialFoods } from './data';
 
 interface FoodContextType {
@@ -11,6 +11,7 @@ interface FoodContextType {
   updateActiveProfile: (data: Partial<Profile>) => void;
   foods: FoodItem[];
   addAttempt: (foodId: string, attempt: Omit<Attempt, 'id'>) => void;
+  addCustomFood: (name: string, category: Category, icon: string) => void;
   updateStatus: (foodId: string, status: Status) => void;
   acknowledgeAllergen: (foodId: string) => void;
 }
@@ -23,20 +24,29 @@ export const FoodProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const saved = localStorage.getItem('babyFirstTastesProfiles');
       if (saved) {
         const parsedProfiles = JSON.parse(saved);
-        return parsedProfiles.map((p: any) => ({
-          ...p,
-          foods: initialFoods.map(initialFood => {
+        return parsedProfiles.map((p: any) => {
+          // Merger initial foods with existing data, but ALSO keep custom foods
+          const initialIds = initialFoods.map(f => f.id);
+          const customFoods = p.foods?.filter((f: any) => !initialIds.includes(f.id)) || [];
+          
+          const mergedInitialFoods = initialFoods.map(initialFood => {
             const existingFood = p.foods?.find((f: any) => f.id === initialFood.id);
             if (existingFood) {
               return {
                 ...initialFood,
                 status: existingFood.status,
-                attempts: existingFood.attempts
+                attempts: existingFood.attempts,
+                allergenWarningAcknowledged: existingFood.allergenWarningAcknowledged
               };
             }
             return initialFood;
-          })
-        }));
+          });
+
+          return {
+            ...p,
+            foods: [...mergedInitialFoods, ...customFoods]
+          };
+        });
       }
       
       // Migration from old app state
@@ -94,6 +104,19 @@ export const FoodProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setProfiles(prev => prev.map(p => p.id === activeProfileId ? { ...p, ...data } : p));
   };
 
+  const addCustomFood = (name: string, category: Category, icon: string) => {
+    const newFood: FoodItem = {
+      id: `custom-${Date.now()}`,
+      name,
+      icon,
+      category,
+      isAllergen: category === 'אלרגנים',
+      status: 'נעול',
+      attempts: []
+    };
+    updateProfileFoods([newFood, ...foods]);
+  };
+
   const addAttempt = (foodId: string, attempt: Omit<Attempt, 'id'>) => {
     const newFoods = foods.map((food) => {
       if (food.id !== foodId) return food;
@@ -108,7 +131,10 @@ export const FoodProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (attempt.reaction === 'תגובה אלרגית') {
         newStatus = 'רגישות/תגובה';
       } else if (food.status === 'נעול' || food.status === 'בתהליך') {
-        if (updatedAttempts.length >= 3 && !updatedAttempts.some(a => a.reaction === 'תגובה אלרגית')) {
+        const hasRefusal = updatedAttempts.some(a => a.reaction === 'סירב/ה');
+        const requiredAttempts = hasRefusal ? 4 : 3;
+        
+        if (updatedAttempts.length >= requiredAttempts && !updatedAttempts.some(a => a.reaction === 'תגובה אלרגית')) {
           newStatus = 'הושלם';
         } else {
           newStatus = 'בתהליך';
@@ -131,7 +157,7 @@ export const FoodProvider: React.FC<{ children: React.ReactNode }> = ({ children
   return (
     <FoodContext.Provider value={{
       profiles, activeProfileId, activeProfile, addProfile, switchProfile, updateActiveProfile,
-      foods, addAttempt, updateStatus, acknowledgeAllergen
+      foods, addAttempt, addCustomFood, updateStatus, acknowledgeAllergen
     }}>
       {children}
     </FoodContext.Provider>
