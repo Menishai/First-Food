@@ -45,9 +45,11 @@ export const CreateFoodModal: React.FC<CreateFoodModalProps> = ({ onClose }) => 
         initial={{ scale: 0.95, opacity: 0, y: 15 }}
         animate={{ scale: 1, opacity: 1, y: 0 }}
         exit={{ scale: 0.95, opacity: 0, y: 10 }}
+        drag={false}
+        dragListener={false}
         className="bg-brand-cream w-full max-w-md rounded-2xl sm:rounded-3xl shadow-2xl flex flex-col max-h-[90vh] relative z-10 overflow-hidden border border-brand-sand m-4 touch-pan-y"
       >
-        <div className="px-6 py-4 flex justify-between items-center bg-white border-b border-brand-sand relative">
+        <div className="px-6 py-4 flex justify-between items-center bg-white border-b border-brand-sand relative select-none">
           <div className="flex items-center gap-3">
             <div className="bg-brand-sage/10 text-brand-sage p-2 rounded-xl">
               <Plus size={20} strokeWidth={2.5} />

@@ -243,7 +243,7 @@ const Dashboard = () => {
         dragConstraints={{ left: 0, right: 0 }}
         dragElastic={0.1}
         onDragEnd={handleDragEnd}
-        className="max-w-5xl mx-auto px-4 pb-4 touch-pan-y"
+        className={`max-w-5xl mx-auto px-4 pb-4 touch-pan-y ${isAnyModalOpen ? 'pointer-events-none' : ''}`}
       >
         {/* HOME VIEW */}
         {activeTab === 'home' && (
@@ -796,7 +796,7 @@ const Dashboard = () => {
       <AnimatePresence>
         {progressListType && (
           <div 
-            className="fixed inset-0 z-[150] flex items-center justify-center bg-slate-900/40 backdrop-blur-md overflow-x-hidden overflow-y-auto"
+            className="fixed inset-0 z-[150] flex items-center justify-center bg-slate-900/40 backdrop-blur-md overflow-x-hidden overflow-y-auto overscroll-none"
             onClick={(e) => {
               if (e.target === e.currentTarget) {
                 setProgressListType(null);
@@ -809,9 +809,11 @@ const Dashboard = () => {
               initial={{ scale: 0.95, opacity: 0, y: 15 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.95, opacity: 0, y: 10 }}
+              drag={false}
+              dragListener={false}
               className="bg-brand-cream w-full max-w-md rounded-2xl sm:rounded-3xl shadow-2xl flex flex-col max-h-[80vh] relative z-10 overflow-hidden border border-brand-sand m-4 touch-pan-y"
             >
-              <div className="px-6 py-4 flex justify-between items-center bg-white border-b border-brand-sand">
+              <div className="px-6 py-4 flex justify-between items-center bg-white border-b border-brand-sand select-none">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 bg-brand-cream rounded-xl flex items-center justify-center text-xl shadow-inner">
                     {progressListCategory 
