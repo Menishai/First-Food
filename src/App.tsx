@@ -53,6 +53,8 @@ const Dashboard = () => {
   const [diarySearchQuery, setDiarySearchQuery] = useState('');
   const [diaryDateRange, setDiaryDateRange] = useState<'all' | '7days' | '30days' | 'month'>('all');
 
+  const isAnyModalOpen = !!selectedFoodId || isGuidelinesOpen || isCreateFoodModalOpen;
+
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [activeTab]);
@@ -223,7 +225,7 @@ const Dashboard = () => {
 
       <motion.main 
         key={activeTab}
-        drag="x"
+        drag={isAnyModalOpen ? false : "x"}
         dragConstraints={{ left: 0, right: 0 }}
         dragElastic={0.1}
         onDragEnd={handleDragEnd}
@@ -323,7 +325,7 @@ const Dashboard = () => {
                     placeholder="חיפוש מזון..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full bg-white border border-brand-sand rounded-[1.5rem] pr-12 pl-5 py-4 text-sm font-semibold text-slate-700 shadow-sm focus:ring-2 focus:ring-brand-sage/10 focus:border-brand-sage/30 outline-none transition-all placeholder:text-slate-300"
+                    className="w-full bg-white border border-brand-sand rounded-[1.5rem] pr-12 pl-5 py-4 text-base font-semibold text-slate-700 shadow-sm focus:ring-2 focus:ring-brand-sage/10 focus:border-brand-sage/30 outline-none transition-all placeholder:text-slate-300"
                   />
                 </div>
                 <div className="flex bg-white p-1.5 rounded-2xl border border-brand-sand shadow-sm gap-1">
@@ -462,6 +464,12 @@ const Dashboard = () => {
         {/* CALENDAR VIEW */}
         {activeTab === 'calendar' && (
           <div className="flex flex-col gap-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <CalendarView 
+              attempts={allAttempts} 
+              selectedDate={selectedCalendarDate} 
+              onDateSelect={setSelectedCalendarDate} 
+            />
+
             {/* Search & Filter for Diary */}
             <div className="flex flex-col gap-4">
               <div className="relative">
@@ -471,7 +479,7 @@ const Dashboard = () => {
                   placeholder="חיפוש ביומן (שם מאכל, תגובה...)"
                   value={diarySearchQuery}
                   onChange={(e) => setDiarySearchQuery(e.target.value)}
-                  className="w-full bg-white border border-brand-sand rounded-2xl pr-10 pl-4 py-3 text-xs font-bold text-slate-700 shadow-sm focus:ring-2 focus:ring-brand-sage/10 focus:border-brand-sage/30 outline-none transition-all placeholder:text-slate-300"
+                  className="w-full bg-white border border-brand-sand rounded-2xl pr-10 pl-4 py-3 text-base font-bold text-slate-700 shadow-sm focus:ring-2 focus:ring-brand-sage/10 focus:border-brand-sage/30 outline-none transition-all placeholder:text-slate-300"
                 />
               </div>
               <div className="flex gap-2 overflow-x-auto pb-1 no-scrollbar">
@@ -495,12 +503,6 @@ const Dashboard = () => {
                 ))}
               </div>
             </div>
-
-            <CalendarView 
-              attempts={allAttempts} 
-              selectedDate={selectedCalendarDate} 
-              onDateSelect={setSelectedCalendarDate} 
-            />
 
             {allAttempts.length > 0 ? (
               <div className="flex flex-col gap-4">
@@ -663,7 +665,7 @@ const Dashboard = () => {
                           placeholder="שם התינוק..."
                           value={newProfileName}
                           onChange={e => setNewProfileName(e.target.value)}
-                          className="w-full bg-gray-50 border-none rounded-xl p-3 text-sm font-bold focus:ring-2 focus:ring-orange-100 outline-none"
+                          className="w-full bg-gray-50 border-none rounded-xl p-3 text-base font-bold focus:ring-2 focus:ring-orange-100 outline-none"
                         />
                         <div className="flex gap-2">
                           <button type="submit" className="flex-1 bg-[#FF9F66] text-white py-3 rounded-xl font-bold active:scale-95 transition-all">הוספה</button>

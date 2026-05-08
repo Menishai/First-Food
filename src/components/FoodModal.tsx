@@ -499,7 +499,7 @@ export const FoodModal: React.FC<FoodModalProps> = ({ food, onClose }) => {
                   required
                   value={date}
                   onChange={(e) => setDate(e.target.value)}
-                  className="p-3 pr-10 border border-brand-sand rounded-xl w-full text-sm text-slate-800 focus:ring-2 focus:ring-brand-sage/20 focus:border-brand-sage focus:outline-none transition-all font-bold bg-brand-cream/20"
+                  className="p-3 pr-10 border border-brand-sand rounded-xl w-full text-base text-slate-800 focus:ring-2 focus:ring-brand-sage/20 focus:border-brand-sage focus:outline-none transition-all font-bold bg-brand-cream/20"
                 />
               </div>
             </div>
@@ -652,7 +652,7 @@ export const FoodModal: React.FC<FoodModalProps> = ({ food, onClose }) => {
                 rows={1}
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
-                className={`p-2.5 border border-brand-sand rounded-xl w-full text-sm text-slate-800 focus:ring-2 focus:outline-none transition-all font-bold ${
+                className={`p-2.5 border border-brand-sand rounded-xl w-full text-base text-slate-800 focus:ring-2 focus:outline-none transition-all font-bold ${
                    reaction === 'תגובה אלרגית' ? 'focus:ring-rose-200 border-rose-300 bg-rose-50/10' : 'focus:ring-brand-sage/10 bg-brand-cream/5'
                 }`}
                 placeholder={reaction === 'תגובה אלרגית' ? "תארו את התגובה..." : "איך היה? (אופציונלי)"}
