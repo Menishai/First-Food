@@ -1,16 +1,166 @@
 import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, Plus, Calendar, AlertCircle, CheckCircle2, Droplets, Download, TrendingUp, ChevronDown, Share2, Image as ImageIcon, FileText, FileSpreadsheet, File, MessageCircle, Info } from 'lucide-react';
-import { FoodItem, Amount, Reaction, Status, Preparation } from '../types';
+import { X, Plus, Calendar, AlertCircle, CheckCircle2, TrendingUp, ChevronDown, Share2, Image as ImageIcon, FileText, FileSpreadsheet, File, MessageCircle, Info } from 'lucide-react';
+import { FoodItem, Amount, Reaction, Preparation } from '../types';
 import { tipsData } from '../data';
+import { getScientificDetails } from '../data/foodDetails';
 import { useFoodContext } from '../context';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Dot } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import * as htmlToImage from 'html-to-image';
 
 interface FoodModalProps {
   food: FoodItem;
   onClose: () => void;
 }
+
+interface FoodDetailsViewProps {
+  food: FoodItem;
+  onLogClick: () => void;
+}
+
+const FoodDetailsView: React.FC<FoodDetailsViewProps> = ({ food, onLogClick }) => {
+  const scientific = getScientificDetails(food);
+  
+  const statusLabels = {
+    'נעול': { text: 'טרם נוסה', bg: 'bg-brand-sand/50 text-brand-olive/50 border border-brand-sand' },
+    'בתהליך': { text: 'בתהליך חשיפה', bg: 'bg-brand-cream text-brand-sage border border-brand-sand shadow-soft' },
+    'הושלם': { text: 'הושלם (בטוח לשימוש)', bg: 'bg-brand-on-primary-container text-brand-sage border border-brand-sage/10 shadow-soft' },
+    'רגישות/תגובה': { text: 'רגישות / להימנע', bg: 'bg-red-50 text-red-700 border border-red-100 shadow-soft' }
+  };
+
+  const statusLabel = statusLabels[food.status] || { text: food.status, bg: 'bg-brand-sand text-brand-olive' };
+
+  return (
+    <div className="flex flex-col gap-4 text-right animate-in fade-in duration-200">
+      {/* Hero Image */}
+      <div className="relative w-full aspect-[16/10] overflow-hidden rounded-xl border border-brand-sand/65 shadow-soft shrink-0">
+        {food.image ? (
+          <img src={food.image} alt={food.name} className="w-full h-full object-cover" />
+        ) : (
+          <div className="w-full h-full bg-brand-cream flex items-center justify-center text-7xl select-none">
+            {food.icon}
+          </div>
+        )}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-transparent"></div>
+        <div className="absolute bottom-3 right-4 flex items-center gap-2">
+          {food.recommendedPhase && (
+            <span className="px-2.5 py-0.5 rounded-lg bg-brand-cream text-brand-sage font-bold text-[9px] border border-brand-sand shadow-soft">
+              שלב {food.recommendedPhase}
+            </span>
+          )}
+          {food.isAllergen && (
+            <span className="px-2.5 py-0.5 rounded-lg bg-brand-blush text-brand-charcoal font-bold text-[9px] border border-brand-blush shadow-soft">
+              אלרגן
+            </span>
+          )}
+        </div>
+      </div>
+
+      {/* Title & Description */}
+      <div className="bg-white p-5 rounded-xl border border-brand-sand/40 shadow-soft flex flex-col gap-2">
+        <div className="flex justify-between items-center">
+          <h1 className="font-serif text-lg font-bold text-brand-olive">{food.name}</h1>
+          <span className={`px-2.5 py-0.5 rounded-lg font-bold text-[9px] uppercase tracking-wider ${statusLabel.bg}`}>
+            {statusLabel.text}
+          </span>
+        </div>
+        <p className="text-xs text-brand-olive/70 font-semibold leading-relaxed">
+          {scientific.description}
+        </p>
+      </div>
+
+      {/* Nutritional Highlights (Bento Grid) */}
+      <div>
+        <h3 className="font-serif text-xs font-bold text-brand-olive/40 uppercase tracking-wider mb-2.5 mr-1">מדגישים תזונתיים</h3>
+        <div className="grid grid-cols-3 gap-2.5">
+          {scientific.highlights.map((h, i) => (
+            <div key={i} className="bg-white border border-brand-sand/55 p-3.5 rounded-xl flex flex-col items-center justify-center text-center shadow-soft">
+              <span className="text-[9px] font-bold text-brand-olive/40 mb-1 leading-none">{h.label}</span>
+              <span className="font-serif text-sm font-extrabold text-brand-sage leading-tight">{h.value}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Preparation Guide */}
+      <div className="flex flex-col gap-3">
+        <h3 className="font-serif text-xs font-bold text-brand-olive/40 uppercase tracking-wider mb-0.5 mr-1">מדריך הכנה והגשה בטוחה</h3>
+        
+        {/* 6 Months */}
+        <div className="p-4 rounded-xl bg-white border border-brand-sand/50 shadow-soft flex gap-3.5 items-start text-right animate-in fade-in duration-300">
+          <div className="w-10 h-10 rounded-full bg-brand-cream border border-brand-sand flex items-center justify-center shrink-0 text-brand-sage font-extrabold text-[11px] shadow-soft">
+            6ח'
+          </div>
+          <div className="flex flex-col gap-0.5">
+            <h4 className="text-xs font-bold text-brand-sage">גיל 6 חודשים (חשיפה ראשונית)</h4>
+            <p className="text-[11px] text-brand-olive/60 mt-1.5 font-semibold leading-relaxed">
+              {scientific.preparation.age6m}
+            </p>
+          </div>
+        </div>
+
+        {/* 9 Months */}
+        <div className="p-4 rounded-xl bg-white border border-brand-sand/50 shadow-soft flex gap-3.5 items-start text-right animate-in fade-in duration-300">
+          <div className="w-10 h-10 rounded-full bg-brand-cream border border-brand-sand flex items-center justify-center shrink-0 text-brand-sage font-extrabold text-[11px] shadow-soft">
+            9ח'
+          </div>
+          <div className="flex flex-col gap-0.5">
+            <h4 className="text-xs font-bold text-brand-sage">גיל 9 חודשים (התקדמות במרקמים)</h4>
+            <p className="text-[11px] text-brand-olive/60 mt-1.5 font-semibold leading-relaxed">
+              {scientific.preparation.age9m}
+            </p>
+          </div>
+        </div>
+
+        {/* 12+ Months */}
+        <div className="p-4 rounded-xl bg-white border border-brand-sand/50 shadow-soft flex gap-3.5 items-start text-right animate-in fade-in duration-300">
+          <div className="w-10 h-10 rounded-full bg-brand-cream border border-brand-sand flex items-center justify-center shrink-0 text-brand-sage font-extrabold text-[11px] shadow-soft">
+            12+
+          </div>
+          <div className="flex flex-col gap-0.5">
+            <h4 className="text-xs font-bold text-brand-sage">גיל 12 חודשים ומעלה (פעוטות)</h4>
+            <p className="text-[11px] text-brand-olive/60 mt-1.5 font-semibold leading-relaxed">
+              {scientific.preparation.age12m}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Safety & Allergies Card */}
+      <div className={`p-4 rounded-xl border flex flex-col gap-2.5 shadow-soft ${
+        food.isAllergen ? 'bg-red-50/30 border-brand-blush/40' : 'bg-brand-cream/30 border-brand-sand'
+      }`}>
+        <div className="flex items-center gap-2 mb-0.5">
+          <AlertCircle className={food.isAllergen ? 'text-red-600 animate-pulse' : 'text-brand-sage'} size={18} />
+          <h4 className={`font-serif text-xs font-bold ${food.isAllergen ? 'text-red-800' : 'text-brand-sage'}`}>
+            דגשי בטיחות ואלרגיות
+          </h4>
+        </div>
+        <p className="text-[11px] text-brand-olive/75 font-semibold leading-relaxed">
+          {scientific.safety.overview}
+        </p>
+        <div className="flex flex-col gap-1.5 mt-1 border-t border-brand-sand/40 pt-2.5">
+          {scientific.safety.tips.map((tip, idx) => (
+            <div key={idx} className="flex items-start gap-1.5 text-[10px] text-brand-olive/60 font-semibold leading-relaxed">
+              <span className="text-brand-sage mt-0.5">•</span>
+              <span>{tip}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Primary Log Button */}
+      <button
+        type="button"
+        onClick={onLogClick}
+        className="w-full py-3.5 bg-brand-sage text-white rounded-xl font-bold text-xs shadow-soft hover:bg-brand-sage/95 active:scale-[0.98] transition-all flex items-center justify-center gap-2 mt-2"
+      >
+        <Plus size={16} strokeWidth={2.5} />
+        דיווח טעימה של {food.name}
+      </button>
+    </div>
+  );
+};
 
 export const FoodModal: React.FC<FoodModalProps> = ({ food, onClose }) => {
   const { foods, addAttempt, activeProfile, acknowledgeAllergen } = useFoodContext();
@@ -19,7 +169,7 @@ export const FoodModal: React.FC<FoodModalProps> = ({ food, onClose }) => {
   const [reaction, setReaction] = useState<Reaction>('אהב/ה');
   const [preparation, setPreparation] = useState<Preparation>('טחון');
   const [notes, setNotes] = useState('');
-  const [activeTab, setActiveTab] = useState<'form' | 'history'>('form');
+  const [activeTab, setActiveTab] = useState<'details' | 'form' | 'history'>('form');
   const [isRuleExpanded, setIsRuleExpanded] = useState(false);
   const [isTipExpanded, setIsTipExpanded] = useState(false);
   const [isAllergenExpanded, setIsAllergenExpanded] = useState(!food.allergenWarningAcknowledged);
@@ -44,7 +194,7 @@ export const FoodModal: React.FC<FoodModalProps> = ({ food, onClose }) => {
     const parts = text.split(/\*(.*?)\*/);
     return parts.map((part, index) => {
       if (index % 2 === 1) {
-        return <strong key={index} className="font-bold text-[#2D2D2D] not-italic">{part}</strong>;
+        return <strong key={index} className="font-bold text-brand-olive not-italic">{part}</strong>;
       }
       return <span key={index}>{part}</span>;
     });
@@ -53,7 +203,6 @@ export const FoodModal: React.FC<FoodModalProps> = ({ food, onClose }) => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     addAttempt(food.id, { date, amount, reaction, preparation, notes });
-    // Reset form mostly but keep date
     setAmount('טעימה');
     setReaction('אהב/ה');
     setPreparation('טחון');
@@ -63,7 +212,7 @@ export const FoodModal: React.FC<FoodModalProps> = ({ food, onClose }) => {
 
   const exportToCSV = () => {
     const headers = ['תאריך טעימה', 'מאכל', 'כמות', 'תגובה', 'הערות'];
-    const rows = food.attempts.map((a, i) => [
+    const rows = food.attempts.map((a) => [
       new Date(a.date).toLocaleDateString('he-IL'),
       food.name,
       a.amount,
@@ -72,7 +221,6 @@ export const FoodModal: React.FC<FoodModalProps> = ({ food, onClose }) => {
     ]);
     
     const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
-    // Add BOM for Hebrew character support in Excel
     const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     const url = URL.createObjectURL(blob);
@@ -91,7 +239,7 @@ export const FoodModal: React.FC<FoodModalProps> = ({ food, onClose }) => {
       if (!shareCardRef.current) return;
       try {
         const dataUrl = await htmlToImage.toPng(shareCardRef.current, { 
-          backgroundColor: '#F9F7F2', 
+          backgroundColor: '#FBF9F6', 
           pixelRatio: 2,
           quality: 1
         });
@@ -135,12 +283,12 @@ export const FoodModal: React.FC<FoodModalProps> = ({ food, onClose }) => {
      <head>
        <title>כל הטעימות</title>
        <style>
-         body { font-family: sans-serif; padding: 20px; color: #333; }
-         h2 { color: #ff9f66; border-bottom: 2px solid #ff9f66; padding-bottom: 10px; }
+         body { font-family: sans-serif; padding: 20px; color: #1B1C1A; }
+         h2 { color: #475B4C; border-bottom: 2px solid #EFEEEB; padding-bottom: 10px; }
          table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-         th, td { border: 1px solid #ddd; padding: 12px 8px; text-align: right; }
-         th { background-color: #f9f7f2; color: #555; }
-         tr:nth-child(even) { background-color: #fafbfc; }
+         th, td { border: 1px solid #EFEEEB; padding: 12px 8px; text-align: right; }
+         th { background-color: #FBF9F6; color: #475B4C; }
+         tr:nth-child(even) { background-color: #FBF9F6; }
        </style>
      </head>
      <body>
@@ -200,7 +348,7 @@ export const FoodModal: React.FC<FoodModalProps> = ({ food, onClose }) => {
        if (last.notes) {
            text += `הערות: ${last.notes}\n`;
        }
-    }
+     }
     const url = `whatsapp://send?text=${encodeURIComponent(text)}`;
     window.open(url, '_blank');
     setShowShareMenu(false);
@@ -208,7 +356,7 @@ export const FoodModal: React.FC<FoodModalProps> = ({ food, onClose }) => {
 
   return (
     <div 
-      className="fixed inset-0 z-[150] flex items-end sm:items-center justify-center bg-slate-900/40 backdrop-blur-md overflow-x-hidden overflow-y-auto overscroll-none"
+      className="fixed inset-0 z-[150] flex items-end sm:items-center justify-center bg-brand-olive/30 backdrop-blur-sm overflow-x-hidden overflow-y-auto overscroll-none"
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
       <motion.div 
@@ -216,18 +364,22 @@ export const FoodModal: React.FC<FoodModalProps> = ({ food, onClose }) => {
         initial={{ y: "100%" }}
         animate={{ y: 0 }}
         exit={{ y: "100%" }}
-        drag={false}
-        dragListener={false}
         transition={{ type: "spring", damping: 25, stiffness: 200 }}
-        className="bg-brand-cream w-full max-w-lg rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh] border border-brand-sand relative z-10 m-0 sm:m-4 touch-pan-y"
+        className="bg-white w-full max-w-lg rounded-t-xl sm:rounded-xl shadow-xl overflow-hidden flex flex-col h-[85vh] sm:h-[680px] max-h-[92vh] border border-brand-sand/50 relative z-10 m-0 sm:m-4 touch-pan-y"
       >
         {/* Header */}
-        <div className="px-5 py-2.5 flex justify-between items-center bg-white relative border-b border-brand-sand select-none">
+        <div className="px-5 py-3.5 flex justify-between items-center bg-white relative border-b border-brand-sand/40 select-none">
           <div className="flex items-center gap-2">
-            <span className="text-2xl drop-shadow-sm">{food.icon}</span>
+            {food.image ? (
+              <div className="w-8 h-8 rounded-lg overflow-hidden border border-brand-sand/60 bg-brand-cream flex items-center justify-center shrink-0">
+                <img src={food.image} alt={food.name} className="w-full h-full object-cover" />
+              </div>
+            ) : (
+              <span className="text-2xl">{food.icon}</span>
+            )}
             <div>
-              <h2 className="text-base font-bold text-slate-800 leading-tight">{food.name}</h2>
-              <div className="text-[9px] font-bold uppercase tracking-widest text-brand-sage">{food.category}</div>
+              <h2 className="text-base font-serif font-bold text-brand-olive leading-tight">{food.name}</h2>
+              <div className="text-[10px] font-bold uppercase tracking-wider text-brand-sage">{food.category}</div>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -237,37 +389,37 @@ export const FoodModal: React.FC<FoodModalProps> = ({ food, onClose }) => {
                 whileTap={{ scale: 0.95 }}
                 onClick={() => setShowShareMenu(!showShareMenu)}
                 title="שיתוף וייצוא"
-                className="p-1.5 bg-brand-sand/30 rounded-full hover:bg-brand-sand text-slate-600 transition-colors shadow-sm flex items-center justify-center"
+                className="w-8 h-8 bg-brand-cream border border-brand-sand/60 text-brand-olive/60 rounded-lg shadow-soft flex items-center justify-center transition-all"
               >
                 <Share2 size={14} />
               </motion.button>
               
               {showShareMenu && (
                 <motion.div 
-                  initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                  initial={{ opacity: 0, y: 5, scale: 0.98 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
-                  className="absolute left-0 top-full mt-2 w-52 bg-white rounded-xl shadow-2xl border border-brand-sand overflow-hidden z-50 p-1"
+                  className="absolute left-0 top-full mt-2 w-52 bg-white rounded-lg shadow-xl border border-brand-sand z-50 p-1"
                 >
                   <div className="flex flex-col gap-0.5">
-                    <button onClick={downloadImage} className="flex items-center gap-2 w-full text-right px-2.5 py-1.5 text-[11px] font-bold text-slate-700 hover:bg-brand-cream rounded-lg transition-colors">
-                      <div className="p-1 bg-blue-50 text-blue-500 rounded-md"><ImageIcon size={14} /></div>
+                    <button onClick={downloadImage} className="flex items-center gap-2 w-full text-right px-2.5 py-1.5 text-xs font-bold text-brand-olive/70 hover:bg-brand-cream rounded-lg transition-colors">
+                      <div className="p-1 bg-brand-cream text-brand-sage rounded"><ImageIcon size={14} /></div>
                       שמירה כתמונה
                     </button>
-                    <button onClick={shareWhatsApp} className="flex items-center gap-2 w-full text-right px-2.5 py-1.5 text-[11px] font-bold text-slate-700 hover:bg-brand-cream rounded-lg transition-colors">
-                      <div className="p-1 bg-green-50 text-green-500 rounded-md"><MessageCircle size={14} /></div>
+                    <button onClick={shareWhatsApp} className="flex items-center gap-2 w-full text-right px-2.5 py-1.5 text-xs font-bold text-brand-olive/70 hover:bg-brand-cream rounded-lg transition-colors">
+                      <div className="p-1 bg-brand-cream text-brand-sage rounded"><MessageCircle size={14} /></div>
                       שיתוף בוואטסאפ
                     </button>
                     <div className="h-px bg-brand-sand/50 my-1 mx-2"></div>
-                    <button onClick={exportToCSV} className="flex items-center gap-2 w-full text-right px-2.5 py-1.5 text-[11px] font-bold text-slate-700 hover:bg-brand-cream rounded-lg transition-colors">
-                      <div className="p-1 bg-slate-50 text-slate-500 rounded-md"><FileText size={14} /></div>
+                    <button onClick={exportToCSV} className="flex items-center gap-2 w-full text-right px-2.5 py-1.5 text-xs font-bold text-brand-olive/70 hover:bg-brand-cream rounded-lg transition-colors">
+                      <div className="p-1 bg-brand-cream text-brand-sage rounded"><FileText size={14} /></div>
                       טעימה נוכחית (CSV)
                     </button>
-                    <button onClick={exportToExcel} className="flex items-center gap-2 w-full text-right px-2.5 py-1.5 text-[11px] font-bold text-slate-700 hover:bg-brand-cream rounded-lg transition-colors">
-                      <div className="p-1 bg-emerald-50 text-emerald-500 rounded-md"><FileSpreadsheet size={14} /></div>
+                    <button onClick={exportToExcel} className="flex items-center gap-2 w-full text-right px-2.5 py-1.5 text-xs font-bold text-brand-olive/70 hover:bg-brand-cream rounded-lg transition-colors">
+                      <div className="p-1 bg-brand-cream text-brand-sage rounded"><FileSpreadsheet size={14} /></div>
                       טעימה נוכחית (Excel)
                     </button>
-                    <button onClick={printToPDFAll} className="flex items-center gap-2 w-full text-right px-2.5 py-1.5 text-[11px] font-bold text-slate-700 hover:bg-brand-cream rounded-lg transition-colors">
-                      <div className="p-1 bg-rose-50 text-rose-500 rounded-md"><File size={14} /></div>
+                    <button onClick={printToPDFAll} className="flex items-center gap-2 w-full text-right px-2.5 py-1.5 text-xs font-bold text-brand-olive/70 hover:bg-brand-cream rounded-lg transition-colors">
+                      <div className="p-1 bg-brand-cream text-brand-sage rounded"><File size={14} /></div>
                       כל הטעימות ביומן (PDF)
                     </button>
                   </div>
@@ -275,25 +427,25 @@ export const FoodModal: React.FC<FoodModalProps> = ({ food, onClose }) => {
               )}
             </div>
             <motion.button 
-              whileHover={{ scale: 1.1, rotate: 90 }}
-              whileTap={{ scale: 0.9 }}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
               onClick={onClose}
-              className="p-1.5 bg-slate-100 rounded-full hover:bg-slate-200 text-slate-500 transition-all"
+              className="w-8 h-8 flex items-center justify-center rounded-lg bg-brand-cream text-brand-olive/40 hover:text-brand-olive transition-colors"
             >
               <X size={18} />
             </motion.button>
           </div>
         </div>
 
-        {/* Tabs Segmented Control */}
-        <div className="px-5 py-2 bg-white/50 border-b border-brand-sand">
-          <div className="flex bg-brand-sand/30 p-1 rounded-xl relative">
+        {/* Tabs Control */}
+        <div className="px-5 py-2 bg-white border-b border-brand-sand/40">
+          <div className="flex bg-brand-sand/30 p-1 rounded-lg relative">
             <button
               onClick={() => setActiveTab('form')}
-              className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all relative z-10 ${
+              className={`flex-1 py-1.5 text-xs font-bold rounded transition-all relative z-10 ${
                 activeTab === 'form' 
-                  ? 'text-brand-olive' 
-                  : 'text-slate-400 hover:text-slate-600'
+                  ? 'text-brand-sage font-extrabold' 
+                  : 'text-brand-olive/40 hover:text-brand-olive'
               }`}
             >
               דיווח טעימה
@@ -301,31 +453,51 @@ export const FoodModal: React.FC<FoodModalProps> = ({ food, onClose }) => {
             <button
               onClick={() => food.attempts.length > 0 && setActiveTab('history')}
               disabled={food.attempts.length === 0}
-              className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all relative z-10 ${
+              className={`flex-1 py-1.5 text-xs font-bold rounded transition-all relative z-10 ${
                 activeTab === 'history' 
-                  ? 'text-brand-olive' 
-                  : 'text-slate-400 hover:text-slate-600'
+                  ? 'text-brand-sage font-extrabold' 
+                  : 'text-brand-olive/40 hover:text-brand-olive'
               } ${food.attempts.length === 0 ? 'opacity-30 cursor-not-allowed' : ''}`}
             >
-              היסטוריה והתקדמות
+              היסטוריה
+            </button>
+            <button
+              onClick={() => setActiveTab('details')}
+              className={`flex-1 py-1.5 text-xs font-bold rounded transition-all relative z-10 ${
+                activeTab === 'details' 
+                  ? 'text-brand-sage font-extrabold' 
+                  : 'text-brand-olive/40 hover:text-brand-olive'
+              }`}
+            >
+              פרטי המאכל
             </button>
             <motion.div 
-              layoutId="activeTab"
+              layoutId="activeTabDetails"
               initial={false}
-              animate={{ x: activeTab === 'form' ? '0%' : '-100%' }}
-              className="absolute top-1 bottom-1 right-1 w-[calc(50%-4px)] bg-white rounded-md shadow-sm z-0"
-              transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+              animate={{ x: activeTab === 'form' ? '0%' : activeTab === 'history' ? '-100%' : '-200%' }}
+              className="absolute top-1 bottom-1 right-1 w-[calc(33.333%-4px)] bg-white rounded shadow-soft border border-brand-sand/40 z-0"
+              transition={{ type: "spring", bounce: 0.15, duration: 0.4 }}
             />
           </div>
         </div>
 
-        <div className="overflow-y-auto p-4 pb-12 flex flex-col gap-4">
-          
-          {activeTab === 'form' ? (
+        <div className="flex-1 overflow-y-auto p-4 pb-6">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeTab}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.18, ease: "easeInOut" }}
+              className="flex flex-col gap-4"
+            >
+              {activeTab === 'details' ? (
+                <FoodDetailsView food={food} onLogClick={() => setActiveTab('form')} />
+              ) : activeTab === 'form' ? (
             <>
               {food.isAllergen && (
-                <div className="bg-rose-50 border border-rose-100 rounded-2xl p-4 flex flex-col gap-3 relative overflow-hidden shrink-0 shadow-sm">
-                  <div className="absolute top-0 right-0 w-1.5 h-full bg-rose-400"></div>
+                <div className="bg-white border border-brand-blush rounded-lg p-4 flex flex-col gap-3 relative overflow-hidden shrink-0 shadow-soft">
+                  <div className="absolute top-0 right-0 w-1 h-full bg-brand-blush"></div>
                   
                   <button 
                     type="button"
@@ -333,27 +505,27 @@ export const FoodModal: React.FC<FoodModalProps> = ({ food, onClose }) => {
                     className="flex justify-between items-center w-full text-right cursor-pointer group"
                   >
                     <div className="flex items-center gap-2">
-                      <div className="bg-white p-1.5 rounded-lg shadow-sm">
-                        <AlertCircle className="text-rose-600" size={20} />
+                      <div className="bg-brand-cream p-1.5 rounded border border-brand-sand/40">
+                        <AlertCircle className="text-brand-primary" size={18} />
                       </div>
-                      <h4 className="font-bold text-rose-800 text-sm">מזון אלרגני - שימו לב!</h4>
+                      <h4 className="font-serif font-bold text-brand-olive text-sm">מזון אלרגני - שימו לב!</h4>
                     </div>
-                    <ChevronDown size={18} className={`text-rose-400 transition-transform duration-300 ${isAllergenExpanded ? 'rotate-180' : ''}`} />
+                    <ChevronDown size={16} className={`text-brand-olive/40 transition-transform duration-300 ${isAllergenExpanded ? 'rotate-180' : ''}`} />
                   </button>
 
                   {isAllergenExpanded && (
                     <motion.div 
                       initial={{ height: 0, opacity: 0 }}
                       animate={{ height: "auto", opacity: 1 }}
-                      className="flex flex-col gap-4 mt-2 pr-2 overflow-hidden"
+                      className="flex flex-col gap-3 mt-2 pr-1 overflow-hidden"
                     >
-                      <p className="text-rose-800 text-sm leading-relaxed font-bold">
+                      <p className="text-brand-olive/80 text-xs leading-relaxed font-bold">
                         מומלץ לחשוף למזון זה בשעות הבוקר או הצהריים, סמוך להשגחה צמודה.
                       </p>
-                      <ul className="text-rose-700/80 text-[13px] list-disc list-inside space-y-2 font-bold leading-relaxed">
+                      <ul className="text-brand-olive/75 text-xs list-disc list-inside space-y-1.5 font-semibold leading-relaxed">
                         <li>אין לחשוף במקביל למזון חדש נוסף באותו יום.</li>
                         <li>הגישו כמות מזערית ביום הראשון.</li>
-                        <li>במידה ומופיעה <span className="text-rose-900 underline decoration-rose-300">פריחה, נפיחות, קשיי נשימה או הקאה</span>: יש להפסיק מיד, להימנע מהמזון, ולהתייעץ בדחיפות עם רופא.</li>
+                        <li>במידה ומופיעה פריחה, נפיחות, קשיי נשימה או הקאה: יש להפסיק מיד, להימנע מהמזון, ולהתייעץ בדחיפות עם רופא.</li>
                       </ul>
                       <div className="pt-2 flex justify-end">
                         <button
@@ -363,7 +535,7 @@ export const FoodModal: React.FC<FoodModalProps> = ({ food, onClose }) => {
                             acknowledgeAllergen(food.id);
                             setIsAllergenExpanded(false);
                           }}
-                          className="bg-white text-rose-600 border border-rose-200 hover:bg-rose-50 text-[11px] font-black uppercase tracking-widest py-2 px-5 rounded-2xl transition-all shadow-sm active:scale-95"
+                          className="bg-brand-cream text-brand-sage border border-brand-sand hover:bg-brand-sand/40 text-[10px] font-bold uppercase tracking-wider py-1.5 px-4 rounded-lg transition-all shadow-soft active:scale-95"
                         >
                           אישור חשיפה
                         </button>
@@ -375,18 +547,18 @@ export const FoodModal: React.FC<FoodModalProps> = ({ food, onClose }) => {
 
               {/* Category Tip */}
               {tipsData[food.category] && (
-                <div className={`${tipsData[food.category].bg} border ${tipsData[food.category].border} p-4 rounded-2xl flex flex-col gap-3 shrink-0 shadow-sm relative overflow-hidden`}>
-                  <div className={`absolute top-0 left-0 w-1.5 h-full opacity-20 ${tipsData[food.category].bg === 'bg-amber-50' ? 'bg-amber-400' : 'bg-brand-sage'}`}></div>
+                <div className="bg-white border border-brand-sand/50 p-4 rounded-lg flex flex-col gap-3 shrink-0 shadow-soft relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-1 h-full bg-brand-sage opacity-40"></div>
                   <button 
                     type="button"
                     onClick={() => setIsTipExpanded(!isTipExpanded)}
                     className="flex justify-between items-center w-full text-right cursor-pointer group"
                   >
                     <div className="flex items-center gap-2">
-                       <span className={`text-xl drop-shadow-sm`}>{tipsData[food.category].icon}</span>
-                       <span className={`font-bold ${tipsData[food.category].textDark} text-sm group-hover:opacity-80 transition-opacity`}>טיפ: {tipsData[food.category].title}</span>
+                       <span className="text-xl">{tipsData[food.category].icon}</span>
+                       <span className="font-serif font-bold text-brand-sage text-sm">טיפ: {tipsData[food.category].title}</span>
                     </div>
-                    <ChevronDown size={18} className={`${tipsData[food.category].textMain} transition-transform duration-300 ${isTipExpanded ? 'rotate-180' : ''}`} />
+                    <ChevronDown size={16} className="text-brand-sage/60 transition-transform duration-300 ${isTipExpanded ? 'rotate-180' : ''}" />
                   </button>
                   {isTipExpanded && (
                     <motion.div 
@@ -394,7 +566,7 @@ export const FoodModal: React.FC<FoodModalProps> = ({ food, onClose }) => {
                       animate={{ height: "auto", opacity: 1 }}
                       className="mt-1 overflow-hidden"
                     >
-                      <p className={`text-sm ${tipsData[food.category].textDark} leading-relaxed font-bold opacity-90`}>
+                      <p className="text-xs text-brand-olive/70 leading-relaxed font-semibold">
                         {tipsData[food.category].content}
                       </p>
                     </motion.div>
@@ -402,293 +574,284 @@ export const FoodModal: React.FC<FoodModalProps> = ({ food, onClose }) => {
                 </div>
               )}
 
-          {/* Serving Suggestion */}
-          {food.servingSuggestion && (
-            <div className="bg-sky-50 border border-sky-100 rounded-2xl p-4 flex gap-3 items-start relative overflow-hidden shrink-0 shadow-sm">
-              <div className="absolute top-0 right-0 w-1.5 h-full bg-sky-400/30"></div>
-              <div className="bg-white p-1.5 rounded-lg shadow-sm shrink-0">
-                <Info className="text-sky-500" size={20} />
-              </div>
-              <div className="flex flex-col gap-0.5">
-                <h4 className="font-bold text-sky-800 text-sm">איך להגיש?</h4>
-                <p className="text-sky-700 text-xs leading-relaxed">
-                  {food.servingSuggestion}
-                </p>
-                {food.recommendedPhase && (
-                  <div className="mt-2 text-[9px] font-bold text-sky-600 bg-white border border-sky-100 inline-block px-2 py-1 rounded-full uppercase tracking-wider w-fit">
-                    שלב {food.recommendedPhase}
+              {/* Serving Suggestion */}
+              {food.servingSuggestion && (
+                <div className="bg-white border border-brand-sand/50 rounded-lg p-4 flex gap-3 items-start relative overflow-hidden shrink-0 shadow-soft">
+                  <div className="absolute top-0 right-0 w-1 h-full bg-brand-sage/20"></div>
+                  <div className="bg-brand-cream p-1.5 rounded border border-brand-sand/40 shrink-0 text-brand-sage">
+                    <Info size={16} />
                   </div>
-                )}
-              </div>
-            </div>
-          )}
-
-          {food.isAromaticOnly && (
-            <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 flex gap-3 items-start relative overflow-hidden shrink-0 shadow-sm">
-              <div className="absolute top-0 right-0 w-1.5 h-full bg-amber-400/30"></div>
-              <div className="bg-white p-1.5 rounded-lg shadow-sm shrink-0">
-                <AlertCircle className="text-amber-500" size={20} />
-              </div>
-              <div className="flex flex-col gap-0.5">
-                <h4 className="font-bold text-amber-800 text-sm">תיבול בלבד!</h4>
-                <p className="text-amber-700 text-xs leading-relaxed">
-                  מרכיב זה נועד להענקת טעם למי הבישול בלבד. יש להוציאו לפני הטחינה וההגשה.
-                </p>
-              </div>
-            </div>
-          )}
-
-          <div className="bg-brand-sand/30 border border-brand-sand p-4 rounded-2xl flex flex-col gap-3 shrink-0 shadow-sm relative">
-            <button 
-              type="button"
-              onClick={() => setIsRuleExpanded(!isRuleExpanded)}
-              className="flex justify-between items-center w-full text-right cursor-pointer group"
-            >
-              <div className="flex items-center gap-2">
-                <div className="bg-white p-1.5 rounded-lg shadow-sm shrink-0">
-                  <TrendingUp className="text-brand-sage" size={18} />
-                </div>
-                <div className="flex flex-col text-right">
-                  <span className="font-bold text-brand-olive text-sm group-hover:text-brand-olive/80 transition-colors">מעקב חשיפות</span>
-                  <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">
-                    {Math.min(food.attempts.length, requiredAttempts)} מתוך {requiredAttempts} חשיפות
-                  </span>
-                </div>
-              </div>
-              <ChevronDown size={18} className={`text-brand-sage transition-transform duration-300 ${isRuleExpanded ? 'rotate-180' : ''}`} />
-            </button>
-            {isRuleExpanded && (
-              <motion.div 
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: "auto", opacity: 1 }}
-                className="flex flex-col gap-4 overflow-hidden pt-2"
-              >
-                <p className="text-[13px] text-brand-olive/70 font-bold leading-relaxed">
-                  {hasRefusal 
-                    ? "מאחר ונרשם סירוב, מומלץ לבצע חשיפה רביעית כדי להתרגל לטעם. אל תתייאשו, זהו תהליך למידה!"
-                    : "מומלץ להגיש מאכל חדש במשך 3 ימים ברצף כדי לוודא הסתגלות מלאה ושלילת תגובה אלרגית."}
-                </p>
-                <div className="flex gap-2">
-                  {Array.from({ length: requiredAttempts }).map((_, idx) => (
-                    <div key={idx} className={`flex-1 h-2 rounded-full relative overflow-hidden ${idx < food.attempts.length ? 'bg-brand-sage/20' : 'bg-slate-200/50'}`}>
-                      {idx < food.attempts.length && (
-                        <motion.div 
-                          initial={{ x: "-100%" }}
-                          animate={{ x: 0 }}
-                          className="absolute inset-0 bg-brand-sage"
-                        />
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </motion.div>
-            )}
-          </div>
-
-          {/* Add Attempt Form */}
-          <form onSubmit={handleSubmit} className="flex flex-col gap-6 shrink-0 bg-white p-6 rounded-2xl border border-brand-sand shadow-sm">
-            <h3 className="text-lg font-bold flex items-center gap-2.5 text-slate-800 leading-none">
-              <div className="bg-brand-sand/50 p-1.5 rounded-lg text-brand-sage"><Plus size={18} strokeWidth={2.5} /></div>
-              דיווח טעימה חדשה
-            </h3>
-            
-            <div className="flex flex-col gap-1.5">
-              <label className="text-[9px] font-bold uppercase tracking-wider text-slate-400">תאריך</label>
-              <div className="relative">
-                <Calendar className="absolute right-3.5 top-1/2 -translate-y-1/2 text-brand-sage pointer-events-none" size={18} />
-                <input 
-                  type="date" 
-                  required
-                  value={date}
-                  onChange={(e) => setDate(e.target.value)}
-                  className="p-3 pr-10 border border-brand-sand rounded-xl w-full text-base text-slate-800 focus:ring-2 focus:ring-brand-sage/20 focus:border-brand-sage focus:outline-none transition-all font-bold bg-brand-cream/20"
-                />
-              </div>
-            </div>
-
-            <div className="flex flex-col gap-1.5">
-              <label className="text-[9px] font-bold uppercase tracking-wider text-slate-400">כמות</label>
-              <div className="flex rounded-xl bg-brand-sand/20 p-1 border border-brand-sand/30">
-                {amounts.map(a => (
-                  <button
-                    key={a}
-                    type="button"
-                    onClick={() => setAmount(a)}
-                    className={`flex-1 py-1.5 px-0.5 text-[10px] font-bold rounded-lg transition-all ${amount === a ? 'bg-white shadow text-brand-sage' : 'text-slate-400 hover:text-slate-600 hover:bg-white/40'}`}
-                  >
-                    <span className="flex flex-col items-center gap-0.5">
-                      <span className="text-base">{amountIcons[a]}</span>
-                      {a}
-                    </span>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="flex flex-col gap-1.5">
-              <label className="text-[9px] font-bold uppercase tracking-wider text-slate-400">צורת הגשה</label>
-              <div className="grid grid-cols-3 gap-1.5 bg-brand-sand/20 p-1 rounded-xl border border-brand-sand/30">
-                {preparations.map(p => (
-                  <button
-                    key={p}
-                    type="button"
-                    onClick={() => setPreparation(p)}
-                    className={`py-2 px-1 text-[10px] font-bold rounded-lg transition-all ${preparation === p ? 'bg-white shadow text-brand-sage' : 'text-slate-400 hover:text-slate-600 hover:bg-white/40'}`}
-                  >
-                    {p}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="flex flex-col gap-1.5">
-               <label className="text-[9px] font-bold uppercase tracking-wider text-slate-400">איך התינוק הגיב?</label>
-               <div className="grid grid-cols-3 gap-2">
-                  {reactions.filter(r => r !== 'תגובה אלרגית').map(r => (
-                    <motion.button
-                      key={r}
-                      type="button"
-                      whileTap={{ scale: 0.98 }}
-                      onClick={() => setReaction(r)}
-                      className={`py-3 px-1 border rounded-xl font-bold transition-all text-[11px] flex flex-col items-center justify-center gap-1
-                        ${reaction === r 
-                          ? 'bg-brand-cream border-brand-sage text-brand-sage shadow shadow-brand-sage/10' 
-                          : 'bg-white border-brand-sand text-slate-400 hover:border-brand-sand/80'
-                        }`}
-                    >
-                      <span className="text-lg drop-shadow-sm">
-                        {r === 'אהב/ה' && '😍'}
-                        {r === 'ניטרלי' && '😐'}
-                        {r === 'סירב/ה' && '🙅'}
-                      </span>
-                      {r}
-                    </motion.button>
-                  ))}
-               </div>
-               
-               {reaction === 'סירב/ה' && (
-                 <motion.div 
-                   initial={{ opacity: 0, y: -5 }}
-                   animate={{ opacity: 1, y: 0 }}
-                   className="mt-1 bg-amber-50 border border-amber-100 p-2.5 rounded-xl flex gap-2 items-start"
-                 >
-                   <Info size={14} className="text-amber-500 shrink-0 mt-0.5" />
-                   <p className="text-[10px] text-amber-800 leading-relaxed font-bold">
-                     לא לדאוג! לעיתים נדרשות 10-15 חשיפות למאכל חדש כדי להתרגל. נסו שיטת הכנה אחרת.
-                   </p>
-                 </motion.div>
-               )}
-            </div>
-
-            <div className={`p-4 border rounded-xl mt-1 transition-all duration-300 ${reaction === 'תגובה אלרגית' ? 'bg-rose-50 border-rose-200' : 'bg-brand-cream/20 border-brand-sand'}`}>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2.5">
-                   <div className={`p-1.5 rounded-lg shadow-sm ${reaction === 'תגובה אלרגית' ? 'bg-white text-rose-500' : 'bg-white text-slate-300'}`}>
-                    <AlertCircle size={15} strokeWidth={2.5} />
-                   </div>
-                   <div className="flex flex-col">
-                    <label htmlFor="reaction-toggle" className={`text-xs font-bold cursor-pointer transition-colors ${reaction === 'תגובה אלרגית' ? "text-rose-800" : "text-slate-500"}`}>
-                      נצפתה רגישות?
-                    </label>
-                    <span className="text-[9px] font-bold text-slate-400">תגובה אלרגית או פריחה</span>
-                   </div>
-                </div>
-                <label className="relative inline-flex items-center cursor-pointer">
-                  <input 
-                    type="checkbox" 
-                    id="reaction-toggle"
-                    className="sr-only peer"
-                    checked={reaction === 'תגובה אלרגית'}
-                    onChange={(e) => setReaction(e.target.checked ? 'תגובה אלרגית' : 'אהב/ה')}
-                  />
-                  <div className="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-[-1rem] peer-checked:after:border-white after:content-[''] after:absolute after:top-[3px] after:right-[3px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-3.5 after:w-3.5 after:transition-all peer-checked:bg-rose-500"></div>
-                </label>
-              </div>
-
-              {reaction === 'תגובה אלרגית' && (
-                <div className="mt-4 flex flex-col gap-3 animate-in fade-in slide-in-from-top-2">
-                  <div className="bg-white/80 p-2.5 rounded-lg border border-rose-100 flex gap-2 items-start shadow-inner">
-                    <AlertCircle size={14} className="text-rose-500 shrink-0 mt-0.5" />
-                    <p className="text-[10px] text-rose-800 leading-relaxed font-bold">
-                      יש לפנות לרופא להתייעצות בהקדם. דאגו לתעד את התסמינים לרופא.
+                  <div className="flex flex-col gap-0.5">
+                    <h4 className="font-bold text-brand-sage text-xs">איך להגיש?</h4>
+                    <p className="text-brand-olive/70 text-xs leading-relaxed font-semibold">
+                      {food.servingSuggestion}
                     </p>
-                  </div>
-                  <div>
-                    <label className="text-[9px] font-bold uppercase tracking-wider text-rose-400 block mb-2">תסמינים:</label>
-                    <div className="flex flex-wrap gap-1.5">
-                      {['פריחה', 'אדמומיות', 'הקאות', 'שלשולים', 'נפיחות', 'קוצר נשימה', 'אי שקט'].map(symptom => {
-                        const isSelected = notes.includes(symptom);
-                        return (
-                          <button
-                            key={symptom}
-                            type="button"
-                            onClick={() => {
-                              if (isSelected) {
-                                setNotes(notes.replace(symptom, '').replace(', ,', ',').trim());
-                              } else {
-                                if (notes.length === 0) setNotes(symptom);
-                                else setNotes(`${notes.trim()}, ${symptom}`);
-                              }
-                            }}
-                            className={`py-1 px-2.5 text-[10px] font-bold rounded-lg transition-all border ${
-                              isSelected
-                                ? 'bg-rose-500 text-white border-rose-600'
-                                : 'bg-white text-rose-600 border-rose-200 hover:bg-rose-50'
-                            }`}
-                          >
-                            {symptom}
-                          </button>
-                        );
-                      })}
-                    </div>
+                    {food.recommendedPhase && (
+                      <div className="mt-2 text-[9px] font-bold text-brand-sage bg-brand-cream border border-brand-sand px-2 py-0.5 rounded uppercase tracking-wider w-fit shadow-soft">
+                        שלב {food.recommendedPhase}
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
-            </div>
 
-            <div className="flex flex-col gap-1.5">
-              <label className={`text-[9px] font-bold uppercase tracking-wider ${reaction === 'תגובה אלרגית' ? 'text-rose-400' : 'text-slate-400'}`}>
-                {reaction === 'תגובה אלרגית' ? 'פירוט נוסף לרופא' : 'הערות'}
-              </label>
-              <textarea 
-                rows={1}
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                className={`p-2.5 border border-brand-sand rounded-xl w-full text-base text-slate-800 focus:ring-2 focus:outline-none transition-all font-bold ${
-                   reaction === 'תגובה אלרגית' ? 'focus:ring-rose-200 border-rose-300 bg-rose-50/10' : 'focus:ring-brand-sage/10 bg-brand-cream/5'
-                }`}
-                placeholder={reaction === 'תגובה אלרגית' ? "תארו את התגובה..." : "איך היה? (אופציונלי)"}
-              />
-            </div>
+              {food.isAromaticOnly && (
+                <div className="bg-white border border-brand-sand rounded-lg p-4 flex gap-3 items-start relative overflow-hidden shrink-0 shadow-soft">
+                  <div className="absolute top-0 right-0 w-1 h-full bg-amber-400"></div>
+                  <div className="bg-brand-cream p-1.5 rounded border border-brand-sand/40 shrink-0 text-amber-600">
+                    <AlertCircle size={16} />
+                  </div>
+                  <div className="flex flex-col gap-0.5">
+                    <h4 className="font-bold text-amber-700 text-xs">תיבול בלבד!</h4>
+                    <p className="text-brand-olive/60 text-xs leading-relaxed font-semibold">
+                      מרכיב זה נועד להענקת טעם למי הבישול בלבד. יש להוציאו לפני הטחינה וההגשה.
+                    </p>
+                  </div>
+                </div>
+              )}
 
-            <motion.button 
-              whileHover={{ scale: 1.01, backgroundColor: "#3a562d" }}
-              whileTap={{ scale: 0.99 }}
-              type="submit" 
-              className="mt-1 w-full py-3.5 bg-brand-sage text-white rounded-xl font-bold text-base shadow-lg shadow-brand-sage/10 transition-all"
-            >
-              שמירת טעימה
-            </motion.button>
-          </form>
+              <div className="bg-brand-cream/30 border border-brand-sand p-4 rounded-lg flex flex-col gap-3 shrink-0 shadow-soft">
+                <button 
+                  type="button"
+                  onClick={() => setIsRuleExpanded(!isRuleExpanded)}
+                  className="flex justify-between items-center w-full text-right cursor-pointer group"
+                >
+                  <div className="flex items-center gap-2">
+                    <div className="bg-white p-1.5 rounded border border-brand-sand/40 shrink-0 text-brand-sage shadow-soft">
+                      <TrendingUp size={16} />
+                    </div>
+                    <div className="flex flex-col text-right">
+                      <span className="font-bold text-brand-olive text-xs">מעקב חשיפות</span>
+                      <span className="text-[9px] font-bold text-brand-olive/40 uppercase tracking-wider">
+                        {Math.min(food.attempts.length, requiredAttempts)} מתוך {requiredAttempts} חשיפות
+                      </span>
+                    </div>
+                  </div>
+                  <ChevronDown size={16} className={`text-brand-sage transition-transform duration-300 ${isRuleExpanded ? 'rotate-180' : ''}`} />
+                </button>
+                {isRuleExpanded && (
+                  <motion.div 
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    className="flex flex-col gap-3 overflow-hidden pt-1"
+                  >
+                    <p className="text-xs text-brand-olive/70 font-semibold leading-relaxed">
+                      {hasRefusal 
+                        ? "מאחר ונרשם סירוב, מומלץ לבצע חשיפה רביעית כדי להתרגל לטעם. אל תתייאשו, זהו תהליך למידה!"
+                        : "מומלץ להגיש מאכל חדש במשך 3 ימים ברצף כדי לוודא הסתגלות מלאה ושלילת תגובה אלרגית."}
+                    </p>
+                    <div className="flex gap-2">
+                      {Array.from({ length: requiredAttempts }).map((_, idx) => (
+                        <div key={idx} className={`flex-1 h-1.5 rounded bg-brand-sand overflow-hidden relative`}>
+                          {idx < food.attempts.length && (
+                            <motion.div 
+                              initial={{ x: "-100%" }}
+                              animate={{ x: 0 }}
+                              className="absolute inset-0 bg-brand-sage"
+                            />
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </motion.div>
+                )}
+              </div>
+
+              {/* Add Attempt Form */}
+              <form onSubmit={handleSubmit} className="flex flex-col gap-5 shrink-0 bg-white p-5 rounded-lg border border-brand-sand/40 shadow-soft">
+                <h3 className="text-sm font-serif font-bold flex items-center gap-2 text-brand-olive leading-none">
+                  <div className="bg-brand-cream p-1.5 rounded border border-brand-sand/50 text-brand-sage shadow-soft"><Plus size={14} strokeWidth={2.5} /></div>
+                  דיווח טעימה חדשה
+                </h3>
+                
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[10px] font-bold uppercase tracking-wider text-brand-olive/40">תאריך</label>
+                  <div className="relative">
+                    <Calendar className="absolute right-3 top-1/2 -translate-y-1/2 text-brand-sage pointer-events-none" size={16} />
+                    <input 
+                      type="date" 
+                      required
+                      value={date}
+                      onChange={(e) => setDate(e.target.value)}
+                      className="p-2.5 pr-9 border border-brand-sand rounded-lg w-full text-xs font-semibold text-brand-olive focus:ring-2 focus:ring-brand-sage/10 focus:border-brand-sage focus:outline-none transition-all bg-brand-cream/10"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[10px] font-bold uppercase tracking-wider text-brand-olive/40">כמות</label>
+                  <div className="flex rounded-lg bg-brand-sand/30 p-1 border border-brand-sand/20">
+                    {amounts.map(a => (
+                      <button
+                        key={a}
+                        type="button"
+                        onClick={() => setAmount(a)}
+                        className={`flex-1 py-1 px-0.5 text-[10px] font-bold rounded transition-all ${amount === a ? 'bg-white border border-brand-sand/40 text-brand-sage shadow-soft' : 'text-brand-olive/40 hover:text-brand-olive'}`}
+                      >
+                        <span className="flex flex-col items-center gap-0.5">
+                          <span className="text-base">{amountIcons[a]}</span>
+                          {a}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[10px] font-bold uppercase tracking-wider text-brand-olive/40">צורת הגשה</label>
+                  <div className="grid grid-cols-3 gap-1 bg-brand-sand/30 p-1 rounded-lg border border-brand-sand/20">
+                    {preparations.map(p => (
+                      <button
+                        key={p}
+                        type="button"
+                        onClick={() => setPreparation(p)}
+                        className={`py-1.5 px-1 text-[10px] font-bold rounded transition-all ${preparation === p ? 'bg-white border border-brand-sand/40 text-brand-sage shadow-soft' : 'text-brand-olive/40 hover:text-brand-olive'}`}
+                      >
+                        {p}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-1.5">
+                   <label className="text-[10px] font-bold uppercase tracking-wider text-brand-olive/40">איך התינוק הגיב?</label>
+                   <div className="grid grid-cols-3 gap-2">
+                      {reactions.filter(r => r !== 'תגובה אלרגית').map(r => (
+                        <button
+                          key={r}
+                          type="button"
+                          onClick={() => setReaction(r)}
+                          className={`py-2 px-1 border rounded-lg font-bold transition-all text-xs flex flex-col items-center justify-center gap-1 border-brand-sand/60 shadow-soft
+                            ${reaction === r 
+                              ? 'bg-brand-cream border-brand-sage text-brand-sage' 
+                              : 'bg-white border-brand-sand text-brand-olive/40 hover:bg-brand-cream'
+                            }`}
+                        >
+                          <span className="text-base">
+                            {r === 'אהב/ה' && '😍'}
+                            {r === 'ניטרלי' && '😐'}
+                            {r === 'סירב/ה' && '🙅'}
+                          </span>
+                          {r}
+                        </button>
+                      ))}
+                   </div>
+                   
+                   {reaction === 'סירב/ה' && (
+                     <div className="mt-1 bg-brand-cream border border-brand-sand/50 p-2.5 rounded-lg flex gap-2 items-start shadow-soft">
+                       <Info size={14} className="text-brand-sage shrink-0 mt-0.5" />
+                       <p className="text-[10px] text-brand-olive/70 leading-relaxed font-bold">
+                         לא לדאוג! לעיתים נדרשות 10-15 חשיפות למאכל חדש כדי להתרגל. נסו שיטת הכנה אחרת.
+                       </p>
+                     </div>
+                   )}
+                </div>
+
+                <div className={`p-3 border rounded-lg mt-1 transition-all duration-300 ${reaction === 'תגובה אלרגית' ? 'bg-brand-blush/20 border-brand-blush' : 'bg-brand-cream/10 border-brand-sand/50'}`}>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                       <div className="p-1 rounded bg-white text-brand-sage border border-brand-sand/40 shadow-soft">
+                        <AlertCircle size={14} strokeWidth={2.5} />
+                       </div>
+                       <div className="flex flex-col">
+                        <label htmlFor="reaction-toggle" className={`text-xs font-bold cursor-pointer transition-colors ${reaction === 'תגובה אלרגית' ? "text-brand-charcoal" : "text-brand-olive/60"}`}>
+                          נצפתה רגישות?
+                        </label>
+                        <span className="text-[9px] font-bold text-brand-olive/40">תגובה אלרגית או פריחה</span>
+                       </div>
+                    </div>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input 
+                        type="checkbox" 
+                        id="reaction-toggle"
+                        className="sr-only peer"
+                        checked={reaction === 'תגובה אלרגית'}
+                        onChange={(e) => setReaction(e.target.checked ? 'תגובה אלרגית' : 'אהב/ה')}
+                      />
+                      <div className="w-8 h-4 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-[-0.9rem] peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:right-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-brand-sage"></div>
+                    </label>
+                  </div>
+
+                  {reaction === 'תגובה אלרגית' && (
+                    <div className="mt-3 flex flex-col gap-2.5 animate-in fade-in slide-in-from-top-2">
+                      <div className="bg-white/80 p-2.5 rounded border border-brand-blush/30 flex gap-2 items-start shadow-inner">
+                        <AlertCircle size={12} className="text-brand-sage shrink-0 mt-0.5" />
+                        <p className="text-[10px] text-brand-charcoal leading-relaxed font-bold">
+                          יש לפנות לרופא להתייעצות בהקדם. דאגו לתעד את התסמינים לרופא.
+                        </p>
+                      </div>
+                      <div>
+                        <label className="text-[10px] font-bold uppercase tracking-wider text-brand-olive/40 block mb-1.5">תסמינים:</label>
+                        <div className="flex flex-wrap gap-1">
+                          {['פריחה', 'אדמומיות', 'הקאות', 'שלשולים', 'נפיחות', 'קוצר נשימה', 'אי שקט'].map(symptom => {
+                            const isSelected = notes.includes(symptom);
+                            return (
+                              <button
+                                key={symptom}
+                                type="button"
+                                onClick={() => {
+                                  if (isSelected) {
+                                    setNotes(notes.replace(symptom, '').replace(', ,', ',').trim());
+                                  } else {
+                                    if (notes.length === 0) setNotes(symptom);
+                                    else setNotes(`${notes.trim()}, ${symptom}`);
+                                  }
+                                }}
+                                className={`py-1 px-2 text-[10px] font-bold rounded border transition-all ${
+                                  isSelected
+                                    ? 'bg-brand-sage text-white border-brand-sage'
+                                    : 'bg-white text-brand-sage border-brand-sand hover:bg-brand-cream'
+                                }`}
+                              >
+                                {symptom}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex flex-col gap-1.5">
+                  <label className={`text-[10px] font-bold uppercase tracking-wider ${reaction === 'תגובה אלרגית' ? 'text-brand-blush' : 'text-brand-olive/40'}`}>
+                    {reaction === 'תגובה אלרגית' ? 'פירוט נוסף לרופא' : 'הערות'}
+                  </label>
+                  <textarea 
+                    rows={1}
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
+                    className="p-2.5 border border-brand-sand rounded-lg w-full text-xs text-brand-olive focus:outline-none transition-all font-semibold bg-brand-cream/5 focus:ring-2 focus:ring-brand-sage/15"
+                    placeholder={reaction === 'תגובה אלרגית' ? "תארו את התגובה..." : "איך היה? (אופציונלי)"}
+                  />
+                </div>
+
+                <button 
+                  type="submit" 
+                  className="w-full py-3 bg-brand-sage text-white rounded-lg font-bold text-sm shadow-soft hover:bg-brand-sage/95 active:scale-[0.98] transition-all"
+                >
+                  שמירת טעימה
+                </button>
+              </form>
             </>
           ) : (
-            <div className="flex flex-col gap-6">
+            <div className="flex flex-col gap-5">
               {food.attempts.length > 0 && (
-                <div className="flex flex-col gap-6">
-                  <div className="flex flex-col gap-3">
-                    <h3 className="text-lg font-bold flex items-center gap-2 text-slate-800">
-                      <div className="bg-brand-sand/50 p-1.5 rounded-lg text-brand-olive"><TrendingUp size={18} strokeWidth={2.5} /></div>
+                <div className="flex flex-col gap-5">
+                  <div className="flex flex-col gap-2.5">
+                    <h3 className="text-sm font-serif font-bold flex items-center gap-1.5 text-brand-olive">
+                      <div className="bg-brand-cream p-1.5 rounded border border-brand-sand/50 text-brand-sage shadow-soft"><TrendingUp size={14} strokeWidth={2.5} /></div>
                       מגמת התקדמות
                     </h3>
               
-                    <div className="flex flex-wrap items-center gap-3 text-[9px] font-bold uppercase tracking-wider text-slate-400 bg-white border border-brand-sand p-2.5 rounded-xl shadow-sm" dir="rtl">
+                    <div className="flex flex-wrap items-center gap-2.5 text-[9px] font-bold uppercase tracking-wider text-brand-olive/40 bg-white border border-brand-sand p-2 rounded-lg shadow-soft" dir="rtl">
                       <span className="text-brand-sage">מקרא:</span>
-                      <span className="flex items-center gap-1 opacity-70">🥄 טעימה</span>
-                      <span className="flex items-center gap-1 opacity-70">🥣 חצי מנה</span>
-                      <span className="flex items-center gap-1 opacity-70">🍲 מנה שלמה</span>
+                      <span className="flex items-center gap-0.5 opacity-80">🥄 טעימה</span>
+                      <span className="flex items-center gap-0.5 opacity-80">🥣 חצי מנה</span>
+                      <span className="flex items-center gap-0.5 opacity-80">🍲 מנה שלמה</span>
                     </div>
 
-                    <div className="h-48 w-full bg-white border border-brand-sand rounded-2xl p-4 shadow-sm" dir="ltr">
+                    <div className="h-44 w-full bg-white border border-brand-sand/40 rounded-lg p-3 shadow-soft" dir="ltr">
                       <ResponsiveContainer width="100%" height="100%">
                         <LineChart data={[...food.attempts].reverse().map((a, i) => ({
                           name: `ט#${i + 1}`,
@@ -697,80 +860,80 @@ export const FoodModal: React.FC<FoodModalProps> = ({ food, onClose }) => {
                           reaction: a.reaction,
                           amount: a.amount
                         }))} margin={{ top: 10, right: 10, bottom: 0, left: -25 }}>
-                          <CartesianGrid strokeDasharray="6 6" vertical={false} stroke="#F0EBE0" />
-                          <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 9, fill: '#94a3b8', fontWeight: 600 }} />
+                          <CartesianGrid strokeDasharray="6 6" vertical={false} stroke="#EFEEEB" />
+                          <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 9, fill: '#94a3b8', fontWeight: 500 }} />
                           <YAxis 
                             domain={[0, 3]} 
                             ticks={[0, 1, 2, 3]} 
                             axisLine={false} 
                             tickLine={false} 
                             tickFormatter={(val) => val === 3 ? '😍' : val === 2 ? '😐' : val === 1 ? '🙅' : '⚠️'}
-                            tick={{ fontSize: 14 }}
+                            tick={{ fontSize: 13 }}
                           />
                           <Tooltip 
-                            contentStyle={{ borderRadius: '12px', border: '1px solid #EBE6DD', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', textAlign: 'right', fontSize: '11px', fontWeight: 'bold' }}
+                            contentStyle={{ borderRadius: '8px', border: '1px solid #EFEEEB', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', textAlign: 'right', fontSize: '11px', fontWeight: 'bold' }}
                             formatter={(val: any, name: any, props: any) => [`${props.payload.reaction} ${amountIcons[props.payload.amount] || ''}`, 'תגובה']}
                             labelFormatter={(label, payload) => payload?.[0]?.payload?.date || label}
                           />
                           <Line 
                             type="monotone" 
                             dataKey="reactionValue" 
-                            stroke="#5C7A4D" 
-                            strokeWidth={3}
-                            dot={{ r: 4, strokeWidth: 2, fill: '#fff', stroke: '#5C7A4D' }}
-                            activeDot={{ r: 6, fill: '#5C7A4D', stroke: '#fff', strokeWidth: 2 }}
+                            stroke="#475B4C" 
+                            strokeWidth={2}
+                            dot={{ r: 3, strokeWidth: 1.5, fill: '#fff', stroke: '#475B4C' }}
+                            activeDot={{ r: 5, fill: '#475B4C', stroke: '#fff', strokeWidth: 1.5 }}
                           />
                         </LineChart>
                       </ResponsiveContainer>
                     </div>
                   </div>
 
-                  <div className="flex flex-col gap-4">
-                    <h3 className="text-lg font-bold flex items-center gap-2 text-slate-800">
-                      <div className="bg-brand-sand/50 p-1.5 rounded-lg text-brand-olive"><Calendar size={18} strokeWidth={2.5} /></div>
+                  <div className="flex flex-col gap-3">
+                    <h3 className="text-sm font-serif font-bold flex items-center gap-1.5 text-brand-olive">
+                      <div className="bg-brand-cream p-1.5 rounded border border-brand-sand/50 text-brand-sage shadow-soft"><Calendar size={14} strokeWidth={2.5} /></div>
                       כל הטעימות
                     </h3>
                     <div className="flex flex-col gap-3 relative">
-                      <div className="absolute top-0 bottom-0 right-[15px] w-0.5 bg-brand-sand/50 -z-0"></div>
+                      <div className="absolute top-0 bottom-0 right-[15px] w-0.5 bg-brand-sand/60 -z-0"></div>
                       {food.attempts.map((attempt, index) => (
                         <div key={attempt.id} className="flex items-start gap-3 relative z-10">
-                          <div className={`w-8 h-8 rounded-full shrink-0 flex items-center justify-center shadow-sm border-2 border-white ${
+                          <div className={`w-8 h-8 rounded-full shrink-0 flex items-center justify-center shadow-soft border-2 border-white ${
                              attempt.reaction === 'אהב/ה' ? 'bg-brand-sage' :
-                             attempt.reaction === 'תגובה אלרגית' ? 'bg-rose-500' :
-                             attempt.reaction === 'סירב/ה' ? 'bg-slate-300' :
-                             'bg-amber-400'
+                             attempt.reaction === 'תגובה אלרגית' ? 'bg-brand-blush' :
+                             attempt.reaction === 'סירב/ה' ? 'bg-brand-sand' :
+                             'bg-brand-sand'
                           }`}>
-                            <span className="text-white text-[10px] font-bold">{food.attempts.length - index}</span>
+                            <span className="text-brand-olive text-xs font-bold">{food.attempts.length - index}</span>
                           </div>
-                          <div className="flex-1 bg-white p-4 rounded-2xl border border-brand-sand shadow-sm">
+                          <div className="flex-1 bg-white p-4 rounded-lg border border-brand-sand/40 shadow-soft">
                             <div className="flex justify-between items-start gap-2 mb-1.5">
                               <div className="min-w-0">
-                                <p className="text-xs font-bold text-slate-800">טעימה של {food.name}</p>
+                                <p className="text-xs font-bold text-brand-olive">טעימה של {food.name}</p>
                                 <div className="flex items-center gap-1.5 mt-0.5">
-                                  <span className="text-[8px] font-bold uppercase tracking-wider text-slate-400">
+                                  <span className="text-[10px] font-bold uppercase tracking-wider text-brand-olive/40">
                                     {new Date(attempt.date).toLocaleDateString('he-IL')}
                                   </span>
-                                  <span className="text-slate-200 text-[8px]">•</span>
-                                  <span className="text-[8px] font-bold uppercase tracking-wider text-brand-sage">
+                                  <span className="text-brand-sand text-xs">•</span>
+                                  <span className="text-[10px] font-bold uppercase tracking-wider text-brand-sage">
                                     {amountIcons[attempt.amount]} {attempt.amount}
                                   </span>
                                 </div>
                               </div>
-                              <div className={`text-[8px] px-2 py-1 rounded-full font-bold uppercase tracking-wider flex items-center gap-1 shadow-sm border ${
-                                 attempt.reaction === 'אהב/ה' ? 'bg-brand-sage/5 text-brand-sage border-brand-sage/10' :
-                                 attempt.reaction === 'תגובה אלרגית' ? 'bg-rose-50 text-rose-700 border-rose-100' :
-                                 attempt.reaction === 'סירב/ה' ? 'bg-slate-50 text-slate-500 border-slate-200' :
-                                 'bg-amber-50 text-amber-700 border-amber-200'
+                              <div className={`text-[10px] px-2 py-0.5 rounded font-bold uppercase tracking-wider flex items-center gap-0.5 shadow-soft border ${
+                                 attempt.reaction === 'אהב/ה' ? 'bg-brand-on-primary-container text-brand-sage border-brand-sage/10' :
+                                 attempt.reaction === 'תגובה אלרגית' ? 'bg-brand-blush/30 text-brand-charcoal border-brand-blush/40' :
+                                 attempt.reaction === 'סירב/ה' ? 'bg-brand-sand/50 text-brand-olive/50 border-brand-sand' :
+                                 'bg-brand-sand/80 text-brand-olive border-brand-sand'
                               }`}>
-                                {attempt.reaction === 'אהב/ה' && <span className="text-[10px]">😍</span>}
-                                {attempt.reaction === 'ניטרלי' && <span className="text-[10px]">😐</span>}
-                                {attempt.reaction === 'סירב/ה' && <span className="text-[10px]">🙅</span>}
-                                {attempt.reaction === 'תגובה אלרגית' && <AlertCircle size={10} strokeWidth={3} />}
+                                {attempt.reaction === 'אהב/ה' && <span className="text-[9px]">😍</span>}
+                                {attempt.reaction === 'ניטרלי' && <span className="text-[9px]">😐</span>}
+                                {attempt.reaction === 'סירב/ה' && <span className="text-[9px]">🙅</span>}
+                                {attempt.reaction === 'תגובה אלרגית' && <AlertCircle size={9} strokeWidth={3} />}
                                 <span>{attempt.reaction}</span>
                               </div>
                             </div>
                             {attempt.notes && (
-                              <div className="text-[11px] text-slate-600 mt-2 bg-brand-cream/30 p-3 rounded-xl italic font-medium leading-relaxed border border-brand-sand/30">
+                              <div className="text-xs text-brand-olive/80 mt-2 bg-brand-cream/30 p-2.5 rounded-lg italic font-medium leading-relaxed border border-brand-sand/30">
                                 {renderNotes(attempt.notes)}
                               </div>
                             )}
@@ -783,6 +946,8 @@ export const FoodModal: React.FC<FoodModalProps> = ({ food, onClose }) => {
               )}
             </div>
           )}
+            </motion.div>
+          </AnimatePresence>
         </div>
       </motion.div>
       
@@ -790,40 +955,45 @@ export const FoodModal: React.FC<FoodModalProps> = ({ food, onClose }) => {
       <div style={{ position: 'absolute', top: '-9999px', left: '-9999px', zIndex: -1 }}>
         <div 
           ref={shareCardRef} 
-          className="bg-[#F9F7F2] p-12 flex flex-col items-center justify-center font-sans tracking-tight"
+          className="bg-[#FBF9F6] p-12 flex flex-col items-center justify-center font-sans tracking-tight"
           style={{ width: '1080px', height: '1080px', direction: 'rtl' }}
         >
-          <div className="bg-white p-12 rounded-[3.5rem] shadow-sm flex flex-col items-center w-full h-full border border-[#EBE6DD]">
-            <div className="text-center space-y-6 mt-10">
-              <div className="w-32 h-32 bg-orange-100 rounded-full flex items-center justify-center mx-auto text-6xl shadow-inner border border-orange-200 overflow-hidden">
+          <div className="bg-white p-12 rounded-2xl shadow-soft flex flex-col items-center w-full h-full border border-brand-sand/50">
+            <div className="text-center space-y-4 mt-10">
+              <div className="w-24 h-24 bg-brand-cream rounded-full flex items-center justify-center mx-auto text-5xl shadow-soft border border-brand-sand overflow-hidden">
                  {activeProfile?.avatar ? (
                    <img src={activeProfile.avatar} alt="Profile" className="w-full h-full object-cover" />
                  ) : (
                    <span>🍼</span>
                  )}
               </div>
-              <h1 className="text-4xl font-bold text-slate-800">היומן של {activeProfile?.name || 'אריאל'}</h1>
+              <h1 className="text-3xl font-serif font-bold text-brand-olive">היומן של {activeProfile?.name || 'אריאל'}</h1>
             </div>
 
-            <div className="mt-16 flex flex-col items-center flex-1 w-full p-12 bg-slate-50 rounded-[2.5rem] border border-slate-100 relative overflow-hidden">
-              <div className="absolute top-0 w-full h-32 bg-gradient-to-b from-orange-50 to-transparent opacity-60"></div>
-              <span className="text-[7rem] leading-none mb-6 relative z-10 filter drop-shadow-xl">{food.icon}</span>
-              <h2 className="text-6xl font-extrabold text-slate-800 mb-3 relative z-10">{food.name}</h2>
-              <div className="text-2xl text-slate-500 font-bold mb-10 relative z-10 px-6 py-2 bg-white rounded-full border border-slate-200 shadow-sm">{food.category}</div>
+            <div className="mt-12 flex flex-col items-center flex-1 w-full p-10 bg-brand-cream rounded-xl border border-brand-sand/40 relative overflow-hidden">
+              {food.image ? (
+                <div className="w-32 h-32 rounded-2xl overflow-hidden border-2 border-brand-sand bg-brand-cream flex items-center justify-center mb-4 filter drop-shadow-xl shadow-soft">
+                  <img src={food.image} alt={food.name} className="w-full h-full object-cover" />
+                </div>
+              ) : (
+                <span className="text-[7rem] leading-none mb-4 filter drop-shadow-xl">{food.icon}</span>
+              )}
+              <h2 className="text-5xl font-serif font-bold text-brand-olive mb-2">{food.name}</h2>
+              <div className="text-xl text-brand-sage font-bold mb-8 px-5 py-1 bg-white rounded-lg border border-brand-sand shadow-soft">{food.category}</div>
               
-              <div className="flex gap-8 w-full justify-center relative z-10 mt-8">
-                  <div className="bg-white p-8 rounded-3xl shadow-sm flex flex-col items-center flex-1 border border-slate-100">
-                     <span className="text-slate-400 text-xl font-bold mb-2">מספר טעימות</span>
-                     <span className="text-5xl font-black text-orange-500">{food.attempts.length}</span>
+              <div className="flex gap-6 w-full justify-center mt-6">
+                  <div className="bg-white p-6 rounded-xl shadow-soft flex flex-col items-center flex-1 border border-brand-sand/35">
+                     <span className="text-brand-olive/40 text-sm font-bold mb-2">מספר טעימות</span>
+                     <span className="text-4xl font-serif font-bold text-brand-sage">{food.attempts.length}</span>
                   </div>
-                  <div className="bg-white p-8 rounded-3xl shadow-sm flex flex-col items-center flex-1 border border-slate-100">
-                     <span className="text-slate-400 text-xl font-bold mb-2">סטטוס</span>
-                     <span className="text-4xl font-black text-[#4B7D96] mt-2">{food.status}</span>
+                  <div className="bg-white p-6 rounded-xl shadow-soft flex flex-col items-center flex-1 border border-brand-sand/35">
+                     <span className="text-brand-olive/40 text-sm font-bold mb-2">סטטוס</span>
+                     <span className="text-3xl font-serif font-bold text-brand-sage mt-1">{food.status}</span>
                   </div>
               </div>
             </div>
             
-            <div className="mt-10 text-center flex items-center gap-3 text-slate-400 text-xl font-bold">
+            <div className="mt-8 text-center flex items-center gap-2 text-brand-olive/30 text-base font-bold">
               <span>נוצר באפליקציית "מעקב טעימות ראשונות"</span>
             </div>
           </div>

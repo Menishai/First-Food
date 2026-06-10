@@ -17,7 +17,11 @@ export interface Profile {
   id: string;
   name: string;
   avatar?: string;
+  birthDate?: string;
   foods: FoodItem[];
+  reminderEnabled?: boolean;
+  reminderTime?: string;
+  reminderType?: string;
 }
 
 export interface FoodItem {
@@ -33,4 +37,5 @@ export interface FoodItem {
   isAromaticOnly?: boolean;
   servingSuggestion?: string;
   allergenWarningAcknowledged?: boolean;
+  image?: string;
 }

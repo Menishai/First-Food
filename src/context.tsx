@@ -14,6 +14,7 @@ interface FoodContextType {
   addCustomFood: (name: string, category: Category, icon: string) => void;
   updateStatus: (foodId: string, status: Status) => void;
   acknowledgeAllergen: (foodId: string) => void;
+  importBackupData: (jsonData: string) => boolean;
 }
 
 const FoodContext = createContext<FoodContextType | undefined>(undefined);
@@ -154,10 +155,71 @@ export const FoodProvider: React.FC<{ children: React.ReactNode }> = ({ children
     updateProfileFoods(foods.map((food) => (food.id === foodId ? { ...food, allergenWarningAcknowledged: true } : food)));
   };
 
+  const importBackupData = (jsonData: string): boolean => {
+    try {
+      const parsed = JSON.parse(jsonData);
+      let importedProfiles: Profile[] = [];
+      let importedActiveId = '';
+
+      if (parsed && typeof parsed === 'object') {
+        if (Array.isArray(parsed)) {
+          importedProfiles = parsed;
+        } else if (Array.isArray(parsed.profiles)) {
+          importedProfiles = parsed.profiles;
+          if (typeof parsed.activeProfileId === 'string') {
+            importedActiveId = parsed.activeProfileId;
+          }
+        }
+      }
+
+      if (importedProfiles.length === 0) return false;
+      const isValid = importedProfiles.every(p => 
+        typeof p.id === 'string' && 
+        typeof p.name === 'string' && 
+        Array.isArray(p.foods)
+      );
+
+      if (!isValid) return false;
+
+      const validatedProfiles = importedProfiles.map(p => {
+        const initialIds = initialFoods.map(f => f.id);
+        const customFoods = p.foods.filter(f => !initialIds.includes(f.id));
+        const mergedFoods = initialFoods.map(initialFood => {
+          const existingFood = p.foods.find(f => f.id === initialFood.id);
+          if (existingFood) {
+            return {
+              ...initialFood,
+              status: existingFood.status,
+              attempts: existingFood.attempts,
+              allergenWarningAcknowledged: existingFood.allergenWarningAcknowledged
+            };
+          }
+          return initialFood;
+        });
+
+        return {
+          ...p,
+          foods: [...mergedFoods, ...customFoods]
+        };
+      });
+
+      setProfiles(validatedProfiles);
+      if (importedActiveId && validatedProfiles.some(p => p.id === importedActiveId)) {
+        setActiveProfileId(importedActiveId);
+      } else if (validatedProfiles[0]) {
+        setActiveProfileId(validatedProfiles[0].id);
+      }
+      return true;
+    } catch (e) {
+      console.error('Failed to import backup data:', e);
+      return false;
+    }
+  };
+
   return (
     <FoodContext.Provider value={{
       profiles, activeProfileId, activeProfile, addProfile, switchProfile, updateActiveProfile,
-      foods, addAttempt, addCustomFood, updateStatus, acknowledgeAllergen
+      foods, addAttempt, addCustomFood, updateStatus, acknowledgeAllergen, importBackupData
     }}>
       {children}
     </FoodContext.Provider>

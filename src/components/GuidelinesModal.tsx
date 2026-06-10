@@ -7,99 +7,99 @@ interface GuidelinesModalProps {
 }
 
 export const GuidelinesModal: React.FC<GuidelinesModalProps> = ({ onClose }) => {
-
   return (
     <motion.div 
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[150] flex items-center justify-center bg-slate-900/40 backdrop-blur-md overflow-x-hidden overflow-y-auto" 
+      className="fixed inset-0 z-[150] flex items-center justify-center bg-brand-olive/30 backdrop-blur-sm overflow-x-hidden overflow-y-auto" 
       dir="rtl"
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
       <motion.div 
-        initial={{ scale: 0.95, opacity: 0, y: 15 }}
+        initial={{ scale: 0.98, opacity: 0, y: 10 }}
         animate={{ scale: 1, opacity: 1, y: 0 }}
-        exit={{ scale: 0.95, opacity: 0, y: 10 }}
-        drag={false}
-        dragListener={false}
-        className="bg-brand-cream w-full max-w-md rounded-2xl sm:rounded-3xl shadow-2xl flex flex-col max-h-[80vh] relative z-10 overflow-hidden border border-brand-sand m-4 touch-pan-y"
+        exit={{ scale: 0.98, opacity: 0, y: 5 }}
+        className="bg-white w-full max-w-md rounded-xl shadow-xl flex flex-col max-h-[80vh] relative z-10 overflow-hidden border border-brand-sand/50 m-4 touch-pan-y"
       >
-        <div className="px-6 py-4 flex justify-between items-center bg-white border-b border-brand-sand relative select-none">
+        <div className="px-5 py-3.5 flex justify-between items-center bg-white border-b border-brand-sand/40 relative select-none">
           <div className="flex items-center gap-3">
-            <div className="bg-sky-50 text-sky-600 p-2 rounded-xl">
-              <Info size={20} strokeWidth={2.5} />
+            <div className="bg-brand-cream text-brand-sage p-2 rounded-lg border border-brand-sand/30 shadow-soft">
+              <Info size={18} strokeWidth={2.5} />
             </div>
             <div className="flex flex-col">
-              <h2 className="text-lg font-bold text-slate-800">דגשי בטיחות</h2>
-              <p className="text-[9px] font-bold uppercase tracking-widest text-slate-400">הנחיות חשובות לחשיפה בריאה</p>
+              <h2 className="text-base font-serif font-bold text-brand-olive leading-none">דגשי בטיחות</h2>
+              <p className="text-[10px] font-bold uppercase tracking-wider text-brand-olive/40 mt-0.5">הנחיות חשובות לחשיפה בריאה</p>
             </div>
           </div>
           <button 
             onClick={onClose}
-            className="p-1.5 bg-brand-sand/50 rounded-full hover:bg-brand-sand text-slate-500 transition-all active:scale-90"
+            className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-brand-cream text-brand-olive/40 transition-colors active:scale-90"
           >
             <X size={18} />
           </button>
         </div>
 
-        <div className="p-5 overflow-y-auto space-y-4 no-scrollbar">
-          <div className="bg-rose-50 p-4 rounded-2xl flex items-start gap-3 border border-rose-100 shadow-sm">
-            <div className="text-2xl mt-0.5 shrink-0">🍯</div>
-            <div>
-              <h3 className="font-bold text-sm text-rose-800 mb-0.5">דבש</h3>
-              <p className="text-xs text-rose-700 leading-relaxed font-medium">אסור לתת דבש מתחת לגיל שנה מחשש לחיידק הבוטוליזם, שעלול להיות מסוכן מאוד במערכת העיכול.</p>
+        <div className="p-4 overflow-y-auto space-y-3.5 no-scrollbar">
+          {[
+            {
+              title: 'דבש',
+              desc: 'אסור לתת דבש מתחת לגיל שנה מחשש לחיידק הבוטוליזם, שעלול להיות מסוכן מאוד במערכת העיכול.',
+              icon: '🍯',
+              alert: true
+            },
+            {
+              title: 'מלח וסוכר',
+              desc: 'הימנעו מהוספת מלח או סוכר. הכליות של התינוק אינן בשלות למלח, וסוכר מזיק לשיניים ללא ערך תזונתי.',
+              icon: '🧂',
+              alert: false
+            },
+            {
+              title: 'מזון לא מפוסטר',
+              desc: 'אין לתת מיצים או מוצרי חלב שלא עברו פיסטור. הם עלולים להכיל חיידקים מסוכנים למערכת החיסונית.',
+              element: <Droplets size={22} className="text-brand-sage" />,
+              alert: false
+            },
+            {
+              title: 'ביצים לא מבושלות',
+              desc: 'ביצים חייבות להיות מבושלות היטב (כמו ביצה קשה). הימנעו מביצה רכה או קצפות המכילות ביצים חיות.',
+              element: <Egg size={22} className="text-brand-sage" />,
+              alert: false
+            },
+            {
+              title: 'דגים נאים ועצמות',
+              desc: 'אין לתת דגים נאים. יש לוודא שהדג מבושל לחלוטין ולהוציא כל עצם, אפילו הקטנה ביותר, מחשש לחנק.',
+              element: <Fish size={22} className="text-brand-sage" />,
+              alert: false
+            },
+            {
+              title: 'חלב פרה',
+              desc: 'אין לחשוף לחלב ניגר לשתייה לפני גיל שנה. ניתן לשלב מוצרי חלב מותססים (יוגורט, גבינה לבנה) בהדרגה.',
+              icon: '🥛',
+              alert: false
+            },
+            {
+              title: 'סכנת חנק',
+              desc: 'חיתכו פירות וירקות עגולים (ענבים) לאורך. זרעים ואגוזים יש לטחון היטב ולא להגיש שלמים לעולם.',
+              element: <AlertTriangle size={22} className="text-brand-sage" />,
+              alert: true
+            }
+          ].map((item, idx) => (
+            <div 
+              key={idx} 
+              className={`bg-white border p-4 rounded-lg flex items-start gap-3 shadow-soft ${
+                item.alert ? 'border-brand-blush' : 'border-brand-sand/50'
+              }`}
+            >
+              <div className="text-xl shrink-0 mt-0.5">
+                {item.element ? item.element : item.icon}
+              </div>
+              <div className="flex flex-col gap-0.5">
+                <h3 className="font-serif font-bold text-sm text-brand-olive">{item.title}</h3>
+                <p className="text-xs text-brand-olive/70 leading-relaxed font-semibold">{item.desc}</p>
+              </div>
             </div>
-          </div>
-
-          <div className="bg-amber-50 p-4 rounded-2xl flex items-start gap-3 border border-amber-100 shadow-sm">
-            <div className="text-2xl mt-0.5 shrink-0">🧂</div>
-            <div>
-              <h3 className="font-bold text-sm text-amber-800 mb-0.5">מלח וסוכר</h3>
-              <p className="text-xs text-amber-700 leading-relaxed font-medium">הימנעו מהוספת מלח או סוכר. הכליות של התינוק אינן בשלות למלח, וסוכר מזיק לשיניים ללא ערך תזונתי.</p>
-            </div>
-          </div>
-
-          <div className="bg-sky-50 p-4 rounded-2xl flex items-start gap-3 border border-sky-100 shadow-sm">
-            <div className="text-sky-500 mt-0.5 shrink-0"><Droplets size={24} strokeWidth={2.5} /></div>
-            <div>
-              <h3 className="font-bold text-sm text-sky-800 mb-0.5">מזון לא מפוסטר</h3>
-              <p className="text-xs text-sky-700 leading-relaxed font-medium">אין לתת מיצים או מוצרי חלב שלא עברו פיסטור. הם עלולים להכיל חיידקים מסוכנים למערכת החיסונית.</p>
-            </div>
-          </div>
-
-          <div className="bg-brand-sand/40 p-4 rounded-2xl flex items-start gap-3 border border-brand-sand shadow-sm">
-            <div className="text-brand-sage mt-0.5 shrink-0"><Egg size={24} strokeWidth={2.5} /></div>
-            <div>
-              <h3 className="font-bold text-sm text-brand-olive mb-0.5">ביצים לא מבושלות</h3>
-              <p className="text-xs text-brand-olive/80 leading-relaxed font-medium">ביצים חייבות להיות מבושלות היטב (כמו ביצה קשה). הימנעו מביצה רכה או קצפות המכילות ביצים חיות.</p>
-            </div>
-          </div>
-          
-          <div className="bg-cyan-50 p-4 rounded-2xl flex items-start gap-3 border border-cyan-100 shadow-sm">
-            <div className="text-cyan-600 mt-0.5 shrink-0"><Fish size={24} strokeWidth={2.5} /></div>
-            <div>
-              <h3 className="font-bold text-sm text-cyan-800 mb-0.5">דגים נאים ועצמות</h3>
-              <p className="text-xs text-cyan-700 leading-relaxed font-medium">אין לתת דגים נאים. יש לוודא שהדג מבושל לחלוטין ולהוציא כל עצם, אפילו הקטנה ביותר, מחשש לחנק.</p>
-            </div>
-          </div>
-
-          <div className="bg-purple-50 p-4 rounded-2xl flex items-start gap-3 border border-purple-100 shadow-sm">
-            <div className="text-2xl mt-0.5 shrink-0">🥛</div>
-            <div>
-              <h3 className="font-bold text-sm text-purple-800 mb-0.5">חלב פרה</h3>
-              <p className="text-xs text-purple-700 leading-relaxed font-medium">אין לחשוף לחלב ניגר לשתייה לפני גיל שנה. ניתן לשלב מוצרי חלב מותססים (יוגורט, גבינה לבנה) בהדרגה.</p>
-            </div>
-          </div>
-
-          <div className="bg-slate-100/50 p-4 rounded-2xl flex items-start gap-3 border border-slate-200 mt-2 shadow-inner">
-             <div className="text-slate-500 mt-0.5 shrink-0"><AlertTriangle size={24} strokeWidth={2.5} /></div>
-             <div>
-               <h3 className="font-bold text-sm text-slate-800 mb-0.5">סכנת חנק</h3>
-               <p className="text-xs text-slate-600 leading-relaxed font-medium">חיתכו פירות וירקות עגולים (ענבים) לאורך. זרעים ואגוזים יש לטחון היטב ולא להגיש שלמים לעולם.</p>
-             </div>
-          </div>
-          
+          ))}
         </div>
       </motion.div>
     </motion.div>

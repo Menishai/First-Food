@@ -5,26 +5,26 @@ import { FoodItem } from '../types';
 
 const statusStyles = {
   'נעול': { 
-    wrapper: 'bg-white border-slate-200 grayscale opacity-60', 
-    text: 'text-slate-400', 
+    wrapper: 'bg-white/50 border-brand-sand/50 grayscale opacity-60', 
+    text: 'text-brand-olive/40', 
     iconText: 'טרם נוסה',
     icon: null 
   },
   'בתהליך': { 
-    wrapper: 'bg-white border-brand-sage/20 shadow-sm', 
+    wrapper: 'bg-white border-brand-sage/20 shadow-soft', 
     text: 'text-brand-sage', 
     iconText: 'בתהליך',
     icon: 'stars' 
   },
   'הושלם': { 
-    wrapper: 'bg-[#F8FAF6] border-brand-sage border-2 shadow-sm', 
+    wrapper: 'bg-white border-brand-sage border shadow-soft', 
     text: 'text-brand-sage', 
     iconText: 'הושלם',
     icon: '✓' 
   },
   'רגישות/תגובה': { 
-    wrapper: 'bg-rose-50 border-rose-500 border-2 shadow-sm', 
-    text: 'text-rose-600', 
+    wrapper: 'bg-white border-brand-blush border shadow-soft', 
+    text: 'text-brand-charcoal', 
     iconText: 'רגישות',
     icon: '⚠️' 
   },
@@ -40,11 +40,10 @@ export const FoodCard: React.FC<FoodCardProps> = ({ food, onClick }) => {
   
   return (
     <motion.button 
-      layout
-      whileHover={{ y: -4, shadow: "0 10px 25px -5px rgba(0,0,0,0.05)" }}
-      whileTap={{ scale: 0.95 }}
+      whileHover={{ y: -2 }}
+      whileTap={{ scale: 0.98 }}
       onClick={onClick}
-      className={`relative overflow-hidden flex flex-col items-start p-5 rounded-[2.5rem] border text-right w-full h-full transition-shadow ${style.wrapper}`}
+      className={`relative overflow-hidden flex flex-col items-start p-4 rounded-xl border text-right w-full h-full transition-all ${style.wrapper}`}
     >
       {food.status === 'הושלם' && (
         <motion.div 
@@ -61,8 +60,8 @@ export const FoodCard: React.FC<FoodCardProps> = ({ food, onClick }) => {
         />
       )}
       
-      <div className="w-full flex justify-between items-start mb-4">
-        <span className={`text-[10px] font-black uppercase tracking-widest ${style.text}`}>
+      <div className="w-full flex justify-between items-start mb-3">
+        <span className={`text-[10px] font-bold uppercase tracking-wider ${style.text}`}>
           {style.iconText}
         </span>
         
@@ -71,15 +70,15 @@ export const FoodCard: React.FC<FoodCardProps> = ({ food, onClick }) => {
             {Array.from({ length: 3 }).map((_, idx) => (
               <Star 
                 key={idx} 
-                size={12} 
-                className={idx < food.attempts.length ? 'fill-brand-sage text-brand-sage' : 'text-slate-200 fill-slate-50'} 
+                size={11} 
+                className={idx < food.attempts.length ? 'fill-brand-sage text-brand-sage' : 'text-brand-sand fill-brand-cream'} 
               />
             ))}
           </span>
         )}
 
         {typeof style.icon === 'string' && style.icon !== 'stars' && (
-          <span className={`font-bold text-lg leading-none ${food.status === 'רגישות/תגובה' ? 'text-rose-500' : 'text-brand-sage'}`}>
+          <span className={`font-bold text-base leading-none ${food.status === 'רגישות/תגובה' ? 'text-brand-charcoal' : 'text-brand-sage'}`}>
             {food.status === 'הושלם' ? (
               <motion.span
                 key={`check-${food.status}-${food.attempts.length}`}
@@ -97,12 +96,18 @@ export const FoodCard: React.FC<FoodCardProps> = ({ food, onClick }) => {
         )}
       </div>
       
-      <div className="flex flex-col gap-1 mb-4">
-        <span className="text-4xl select-none leading-none mb-1">{food.icon}</span>
-        <span className={`font-serif font-black text-xl leading-tight ${food.status === 'נעול' ? 'text-slate-500' : 'text-slate-900'}`}>
+      <div className="flex flex-col gap-1 mb-3">
+        {food.image ? (
+          <div className="w-12 h-12 rounded-lg overflow-hidden bg-brand-cream border border-brand-sand/55 shadow-soft mb-1 select-none flex items-center justify-center">
+            <img src={food.image} alt={food.name} className="w-full h-full object-cover" />
+          </div>
+        ) : (
+          <span className="text-3xl select-none leading-none mb-1">{food.icon}</span>
+        )}
+        <span className={`font-serif font-bold text-lg leading-tight ${food.status === 'נעול' ? 'text-brand-olive/50' : 'text-brand-olive'}`}>
           {food.name}
         </span>
-        <p className="text-[11px] text-slate-400 font-bold uppercase tracking-widest group-hover:text-slate-500">
+        <p className="text-[10px] text-brand-olive/40 font-bold uppercase tracking-wider">
           {food.attempts.length > 0 
             ? `${food.attempts.length} ניסיונות` 
             : (food.status === 'נעול' && food.isAllergen ? 'מזון אלרגני' : food.category)
@@ -112,12 +117,12 @@ export const FoodCard: React.FC<FoodCardProps> = ({ food, onClick }) => {
 
       <div className="w-full flex flex-wrap gap-1 justify-end mt-auto">
         {food.recommendedPhase && (
-          <span className="text-[10px] bg-sky-50 border border-sky-100 text-sky-600 px-3 py-1 rounded-full font-black uppercase tracking-tighter shadow-sm">
+          <span className="text-[9px] bg-brand-cream border border-brand-sand text-brand-sage px-2 py-0.5 rounded-lg font-bold uppercase tracking-wider shadow-soft">
             שלב {food.recommendedPhase}
           </span>
         )}
         {food.isAllergen && (
-          <span className="text-[10px] bg-rose-50 border border-rose-100 text-rose-600 px-3 py-1 rounded-full font-black uppercase tracking-tighter shadow-sm">
+          <span className="text-[9px] bg-brand-blush/30 border border-brand-blush text-brand-olive px-2 py-0.5 rounded-lg font-bold uppercase tracking-wider shadow-soft">
             אלרגן
           </span>
         )}
@@ -125,4 +130,3 @@ export const FoodCard: React.FC<FoodCardProps> = ({ food, onClick }) => {
     </motion.button>
   );
 };
-
