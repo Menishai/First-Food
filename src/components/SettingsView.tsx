@@ -224,6 +224,35 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ setIsGuidelinesOpen 
   const phase2Foods = completedFoods.filter(f => f.recommendedPhase === 2);
   const phase3Foods = completedFoods.filter(f => f.recommendedPhase === 3);
 
+  const shareMedicalWhatsApp = () => {
+    const completedList = foods.filter(f => f.status === 'הושלם');
+    const sensitiveList = foods.filter(f => f.status === 'רגישות/תגובה');
+    
+    let text = `📋 *דו"ח טעימות עבור ${activeProfile?.name || 'אריאל'}* 👶\n`;
+    text += `גיל: ${babyAge || 'לא מוגדר'}\n`;
+    text += `הופק בתאריך: ${new Date().toLocaleDateString('he-IL')}\n\n`;
+    
+    text += `✅ *מזונות שנחשפו בהצלחה (${completedList.length}):*\n`;
+    text += completedList.slice(0, 10).map(f => `${f.icon} ${f.name}`).join(', ');
+    if (completedList.length > 10) {
+      text += ` ועוד ${completedList.length - 10} מאכלים...`;
+    }
+    text += `\n\n`;
+    
+    if (sensitiveList.length > 0) {
+      text += `⚠️ *רגישויות/תגובות שנצפו (${sensitiveList.length}):*\n`;
+      text += sensitiveList.map(f => `${f.icon} ${f.name}`).join(', ');
+      text += `\n\n`;
+    } else {
+      text += `✔️ לא נרשמו רגישויות או סירובים מיוחדים.\n\n`;
+    }
+    
+    text += `נוצר באפליקציית "First Food" מעקב טעימות ראשונות 🍎`;
+    
+    const url = `whatsapp://send?text=${encodeURIComponent(text)}`;
+    window.open(url, '_blank');
+  };
+
   return (
     <div className="flex flex-col gap-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
       
@@ -633,16 +662,29 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ setIsGuidelinesOpen 
             )}
           </div>
 
-          <button 
-            onClick={() => printMedicalPDFAll(foods, activeProfile?.name, activeProfile?.birthDate, babyAge)}
-            className="flex items-center justify-between p-4 bg-brand-cream/30 border border-brand-sand/45 rounded-xl hover:bg-brand-cream/60 transition-colors shadow-soft text-right w-full"
-          >
-            <div className="flex items-center gap-3">
-              <File size={18} className="text-brand-sage" />
-              <span className="text-xs font-bold text-brand-olive">ייצוא דו"ח רפואי מלא (PDF)</span>
+          <div className="bg-brand-cream/20 border border-brand-sand/45 rounded-xl p-4.5 flex flex-col gap-3 shadow-soft text-right">
+            <span className="text-xs font-bold text-brand-sage uppercase tracking-tight flex items-center gap-1.5">
+              📋 דו"ח רפואי קליני (לרופא או משפחה)
+            </span>
+            <p className="text-[11px] text-brand-olive/60 font-semibold leading-relaxed">
+              הפיקו דו"ח מסודר המפרט את כל המזונות שנוסו, בדגש על אלרגנים ורגישויות שנצפו.
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-1">
+              <button 
+                onClick={() => printMedicalPDFAll(foods, activeProfile?.name, activeProfile?.birthDate, babyAge)}
+                className="flex items-center justify-center gap-2 p-3 bg-white border border-brand-sand/65 text-brand-sage hover:bg-brand-cream rounded-lg font-bold text-xs shadow-soft transition-all active:scale-98"
+              >
+                <File size={14} />
+                <span>הפקת דו"ח PDF (להדפסה)</span>
+              </button>
+              <button 
+                onClick={shareMedicalWhatsApp}
+                className="flex items-center justify-center gap-2 p-3 bg-[#25D366]/10 border border-[#25D366]/30 text-[#128C7E] hover:bg-[#25D366]/20 rounded-lg font-bold text-xs shadow-soft transition-all active:scale-98"
+              >
+                <span>💬 שיתוף סיכום בוואטסאפ</span>
+              </button>
             </div>
-            <ChevronLeft size={16} className="text-brand-sage/60" />
-          </button>
+          </div>
         </div>
       </div>
 

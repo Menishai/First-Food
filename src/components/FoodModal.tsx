@@ -162,6 +162,47 @@ const FoodDetailsView: React.FC<FoodDetailsViewProps> = ({ food, onLogClick }) =
   );
 };
 
+const resizeImage = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+        const maxDim = 250;
+        
+        if (width > height) {
+          if (width > maxDim) {
+            height = Math.round((height * maxDim) / width);
+            width = maxDim;
+          }
+        } else {
+          if (height > maxDim) {
+            width = Math.round((width * maxDim) / height);
+            height = maxDim;
+          }
+        }
+        
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, width, height);
+          resolve(canvas.toDataURL('image/jpeg', 0.7));
+        } else {
+          reject(new Error('Canvas context not available'));
+        }
+      };
+      img.onerror = () => reject(new Error('Image load error'));
+      img.src = e.target?.result as string;
+    };
+    reader.onerror = () => reject(new Error('File read error'));
+    reader.readAsDataURL(file);
+  });
+};
+
 export const FoodModal: React.FC<FoodModalProps> = ({ food, onClose }) => {
   const { foods, addAttempt, activeProfile, acknowledgeAllergen } = useFoodContext();
   const [date, setDate] = useState(() => new Date().toISOString().split('T')[0]);
@@ -174,8 +215,11 @@ export const FoodModal: React.FC<FoodModalProps> = ({ food, onClose }) => {
   const [isTipExpanded, setIsTipExpanded] = useState(false);
   const [isAllergenExpanded, setIsAllergenExpanded] = useState(!food.allergenWarningAcknowledged);
   const [showShareMenu, setShowShareMenu] = useState(false);
+  const [photo, setPhoto] = useState<string | undefined>(undefined);
+  const [selectedLightboxImage, setSelectedLightboxImage] = useState<string | null>(null);
   const modalRef = useRef<HTMLDivElement>(null);
   const shareCardRef = useRef<HTMLDivElement>(null);
+  const photoInputRef = useRef<HTMLInputElement>(null);
 
   const amounts: Amount[] = ['טעימה', 'חצי מנה', 'מנה שלמה'];
   const reactions: Reaction[] = ['אהב/ה', 'ניטרלי', 'סירב/ה', 'תגובה אלרגית'];
@@ -202,12 +246,25 @@ export const FoodModal: React.FC<FoodModalProps> = ({ food, onClose }) => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    addAttempt(food.id, { date, amount, reaction, preparation, notes });
+    addAttempt(food.id, { date, amount, reaction, preparation, notes, photo });
     setAmount('טעימה');
     setReaction('אהב/ה');
     setPreparation('טחון');
     setNotes('');
+    setPhoto(undefined);
     onClose();
+  };
+
+  const handlePhotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      try {
+        const compressed = await resizeImage(file);
+        setPhoto(compressed);
+      } catch (err) {
+        console.error('Failed to compress image:', err);
+      }
+    }
   };
 
   const exportToCSV = () => {
@@ -520,7 +577,7 @@ export const FoodModal: React.FC<FoodModalProps> = ({ food, onClose }) => {
                       className="flex flex-col gap-3 mt-2 pr-1 overflow-hidden"
                     >
                       <p className="text-brand-olive/80 text-xs leading-relaxed font-bold">
-                        מומלץ לחשוף למזון זה בשעות הבוקר או הצהריים, סמוך להשגחה צמודה.
+                        מומלץ לחשוף למזון זה בשעות הבוקר ביום שבו התינוק בריא, כדי שתוכלו לעקוב אחריו במשך 2-3 שעות סמוך להשגחה צמודה.
                       </p>
                       <ul className="text-brand-olive/75 text-xs list-disc list-inside space-y-1.5 font-semibold leading-relaxed">
                         <li>אין לחשוף במקביל למזון חדש נוסף באותו יום.</li>
@@ -715,26 +772,30 @@ export const FoodModal: React.FC<FoodModalProps> = ({ food, onClose }) => {
 
                 <div className="flex flex-col gap-1.5">
                    <label className="text-[10px] font-bold uppercase tracking-wider text-brand-olive/40">איך התינוק הגיב?</label>
-                   <div className="grid grid-cols-3 gap-2">
-                      {reactions.filter(r => r !== 'תגובה אלרגית').map(r => (
-                        <button
-                          key={r}
-                          type="button"
-                          onClick={() => setReaction(r)}
-                          className={`py-2 px-1 border rounded-lg font-bold transition-all text-xs flex flex-col items-center justify-center gap-1 border-brand-sand/60 shadow-soft
-                            ${reaction === r 
-                              ? 'bg-brand-cream border-brand-sage text-brand-sage' 
-                              : 'bg-white border-brand-sand text-brand-olive/40 hover:bg-brand-cream'
-                            }`}
-                        >
-                          <span className="text-base">
-                            {r === 'אהב/ה' && '😍'}
-                            {r === 'ניטרלי' && '😐'}
-                            {r === 'סירב/ה' && '🙅'}
-                          </span>
-                          {r}
-                        </button>
-                      ))}
+                   <div className="grid grid-cols-4 gap-2">
+                     {[
+                       { id: 'אהב/ה', label: 'אהב/ה', emoji: '😍', colorClass: 'border-green-200 text-green-700 bg-green-50/50' },
+                       { id: 'ניטרלי', label: 'ניטרלי', emoji: '😐', colorClass: 'border-blue-100 text-blue-700 bg-blue-50/30' },
+                       { id: 'סירב/ה', label: 'סירב/ה', emoji: '🙅', colorClass: 'border-amber-200 text-amber-700 bg-amber-50/30' },
+                       { id: 'תגובה אלרגית', label: 'רגישות', emoji: '⚠️', colorClass: 'border-red-200 text-red-700 bg-red-50/50' },
+                     ].map((r) => {
+                       const isSelected = reaction === r.id;
+                       return (
+                         <button
+                           key={r.id}
+                           type="button"
+                           onClick={() => setReaction(r.id as Reaction)}
+                           className={`py-2 px-1 border rounded-lg font-bold transition-all text-[11px] flex flex-col items-center justify-center gap-1 shadow-soft
+                             ${isSelected 
+                               ? `${r.colorClass} border-2 border-brand-sage` 
+                               : 'bg-white border-brand-sand text-brand-olive/40 hover:bg-brand-cream'
+                             }`}
+                         >
+                           <span className="text-lg">{r.emoji}</span>
+                           <span className="truncate">{r.label}</span>
+                         </button>
+                       );
+                     })}
                    </div>
                    
                    {reaction === 'סירב/ה' && (
@@ -747,70 +808,77 @@ export const FoodModal: React.FC<FoodModalProps> = ({ food, onClose }) => {
                    )}
                 </div>
 
-                <div className={`p-3 border rounded-lg mt-1 transition-all duration-300 ${reaction === 'תגובה אלרגית' ? 'bg-brand-blush/20 border-brand-blush' : 'bg-brand-cream/10 border-brand-sand/50'}`}>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                       <div className="p-1 rounded bg-white text-brand-sage border border-brand-sand/40 shadow-soft">
-                        <AlertCircle size={14} strokeWidth={2.5} />
-                       </div>
-                       <div className="flex flex-col">
-                        <label htmlFor="reaction-toggle" className={`text-xs font-bold cursor-pointer transition-colors ${reaction === 'תגובה אלרגית' ? "text-brand-charcoal" : "text-brand-olive/60"}`}>
-                          נצפתה רגישות?
-                        </label>
-                        <span className="text-[9px] font-bold text-brand-olive/40">תגובה אלרגית או פריחה</span>
-                       </div>
+                {reaction === 'תגובה אלרגית' && (
+                  <div className="flex flex-col gap-3 animate-in fade-in slide-in-from-top-2 bg-brand-blush/20 border border-brand-blush p-4 rounded-lg shadow-soft">
+                    <div className="bg-white/80 p-2.5 rounded border border-brand-blush/30 flex gap-2 items-start shadow-inner">
+                      <AlertCircle size={12} className="text-red-600 shrink-0 mt-0.5" />
+                      <p className="text-[10px] text-brand-charcoal leading-relaxed font-bold">
+                        יש לפנות לרופא להתייעצות בהקדם. דאגו לתעד את התסמינים לרופא.
+                      </p>
                     </div>
-                    <label className="relative inline-flex items-center cursor-pointer">
-                      <input 
-                        type="checkbox" 
-                        id="reaction-toggle"
-                        className="sr-only peer"
-                        checked={reaction === 'תגובה אלרגית'}
-                        onChange={(e) => setReaction(e.target.checked ? 'תגובה אלרגית' : 'אהב/ה')}
-                      />
-                      <div className="w-8 h-4 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-[-0.9rem] peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:right-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-brand-sage"></div>
-                    </label>
-                  </div>
-
-                  {reaction === 'תגובה אלרגית' && (
-                    <div className="mt-3 flex flex-col gap-2.5 animate-in fade-in slide-in-from-top-2">
-                      <div className="bg-white/80 p-2.5 rounded border border-brand-blush/30 flex gap-2 items-start shadow-inner">
-                        <AlertCircle size={12} className="text-brand-sage shrink-0 mt-0.5" />
-                        <p className="text-[10px] text-brand-charcoal leading-relaxed font-bold">
-                          יש לפנות לרופא להתייעצות בהקדם. דאגו לתעד את התסמינים לרופא.
-                        </p>
-                      </div>
-                      <div>
-                        <label className="text-[10px] font-bold uppercase tracking-wider text-brand-olive/40 block mb-1.5">תסמינים:</label>
-                        <div className="flex flex-wrap gap-1">
-                          {['פריחה', 'אדמומיות', 'הקאות', 'שלשולים', 'נפיחות', 'קוצר נשימה', 'אי שקט'].map(symptom => {
-                            const isSelected = notes.includes(symptom);
-                            return (
-                              <button
-                                key={symptom}
-                                type="button"
-                                onClick={() => {
-                                  if (isSelected) {
-                                    setNotes(notes.replace(symptom, '').replace(', ,', ',').trim());
-                                  } else {
-                                    if (notes.length === 0) setNotes(symptom);
-                                    else setNotes(`${notes.trim()}, ${symptom}`);
-                                  }
-                                }}
-                                className={`py-1 px-2 text-[10px] font-bold rounded border transition-all ${
-                                  isSelected
-                                    ? 'bg-brand-sage text-white border-brand-sage'
-                                    : 'bg-white text-brand-sage border-brand-sand hover:bg-brand-cream'
-                                }`}
-                              >
+                    <div>
+                      <label className="text-[10px] font-bold uppercase tracking-wider text-brand-olive/40 block mb-1.5">תסמינים:</label>
+                      <div className="flex flex-wrap gap-1">
+                        {['פריחה', 'אדמומיות', 'הקאות', 'שלשולים', 'נפיחות', 'קוצר נשימה', 'אי שקט'].map(symptom => {
+                          const isSelected = notes.includes(symptom);
+                          return (
+                            <button
+                              key={symptom}
+                              type="button"
+                              onClick={() => {
+                                if (isSelected) {
+                                  setNotes(notes.replace(symptom, '').replace(', ,', ',').trim());
+                                } else {
+                                  if (notes.length === 0) setNotes(symptom);
+                                  else setNotes(`${notes.trim()}, ${symptom}`);
+                                }
+                              }}
+                              className={`py-1 px-2 text-[10px] font-bold rounded border transition-all ${
+                                isSelected
+                                  ? 'bg-brand-sage text-white border-brand-sage'
+                                  : 'bg-white text-brand-sage border-brand-sand hover:bg-brand-cream'
+                              }`}
+                            >
                                 {symptom}
-                              </button>
-                            );
-                          })}
-                        </div>
+                            </button>
+                          );
+                        })}
                       </div>
                     </div>
-                  )}
+                  </div>
+                )}
+
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[10px] font-bold uppercase tracking-wider text-brand-olive/40">הוספת תמונה של הטעימה</label>
+                  <div className="flex items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={() => photoInputRef.current?.click()}
+                      className="flex items-center gap-2 px-4 py-2 bg-white border border-brand-sand rounded-lg text-xs font-bold text-brand-sage shadow-soft hover:bg-brand-cream transition-all"
+                    >
+                      <ImageIcon size={14} />
+                      <span>{photo ? 'שינוי תמונה' : 'בחירת תמונה (מצלמה/גלריה)'}</span>
+                    </button>
+                    <input 
+                      type="file" 
+                      ref={photoInputRef} 
+                      onChange={handlePhotoChange} 
+                      accept="image/*" 
+                      className="hidden" 
+                    />
+                    {photo && (
+                      <div className="relative w-12 h-12 rounded-lg overflow-hidden border border-brand-sand shadow-soft shrink-0">
+                        <img src={photo} alt="Attached" className="w-full h-full object-cover" />
+                        <button
+                          type="button"
+                          onClick={() => setPhoto(undefined)}
+                          className="absolute -top-1 -left-1 w-4 h-4 bg-red-500 text-white rounded-full flex items-center justify-center text-[8px] font-bold shadow-soft"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 <div className="flex flex-col gap-1.5">
@@ -932,6 +1000,16 @@ export const FoodModal: React.FC<FoodModalProps> = ({ food, onClose }) => {
                                 <span>{attempt.reaction}</span>
                               </div>
                             </div>
+                            {attempt.photo && (
+                              <div className="mt-2 w-20 h-20 rounded-lg overflow-hidden border border-brand-sand shadow-soft cursor-pointer relative group active:scale-95 transition-all mb-2">
+                                <img 
+                                  src={attempt.photo} 
+                                  alt="טעימה" 
+                                  className="w-full h-full object-cover group-hover:scale-105 transition-transform" 
+                                  onClick={() => setSelectedLightboxImage(attempt.photo || null)}
+                                />
+                              </div>
+                            )}
                             {attempt.notes && (
                               <div className="text-xs text-brand-olive/80 mt-2 bg-brand-cream/30 p-2.5 rounded-lg italic font-medium leading-relaxed border border-brand-sand/30">
                                 {renderNotes(attempt.notes)}
@@ -999,6 +1077,37 @@ export const FoodModal: React.FC<FoodModalProps> = ({ food, onClose }) => {
           </div>
         </div>
       </div>
+      
+      {/* Lightbox Modal */}
+      <AnimatePresence>
+        {selectedLightboxImage && (
+          <div 
+            className="fixed inset-0 z-[200] flex items-center justify-center bg-black/85 backdrop-blur-sm p-4"
+            onClick={() => setSelectedLightboxImage(null)}
+          >
+            <motion.div 
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="relative max-w-full max-h-full flex flex-col items-center gap-4"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <img 
+                src={selectedLightboxImage} 
+                alt="הגדלת תמונה" 
+                className="max-w-[90vw] max-h-[80vh] rounded-lg shadow-2xl border-2 border-white/25 object-contain" 
+              />
+              <button 
+                type="button"
+                onClick={() => setSelectedLightboxImage(null)}
+                className="px-6 py-2 bg-white text-brand-olive font-bold text-xs rounded-full shadow-soft active:scale-95 transition-all"
+              >
+                סגירה
+              </button>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

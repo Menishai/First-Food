@@ -31,7 +31,7 @@ const Dashboard = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isGuidelinesOpen, setIsGuidelinesOpen] = useState(false);
   const [isCreateFoodModalOpen, setIsCreateFoodModalOpen] = useState(false);
-  const [sortOrder, setSortOrder] = useState<'name-asc' | 'name-desc' | 'status-tried' | 'status-untried' | 'completed'>('name-asc');
+  const [sortOrder, setSortOrder] = useState<'recommended' | 'name-asc' | 'name-desc' | 'status-tried' | 'status-untried' | 'completed'>('recommended');
   const [selectedCalendarDate, setSelectedCalendarDate] = useState<Date | null>(null);
   const [diarySortOrder, setDiarySortOrder] = useState<'desc' | 'asc'>('desc');
   const [isDiarySortMenuOpen, setIsDiarySortMenuOpen] = useState(false);
@@ -178,6 +178,7 @@ const Dashboard = () => {
             setActiveTab={setActiveTab}
             setProgressListType={setProgressListType}
             setProgressListCategory={setProgressListCategory}
+            setSelectedFoodId={setSelectedFoodId}
           />
         )}
 
@@ -320,8 +321,15 @@ const Dashboard = () => {
                         }`}>
                           {attempt.reaction}
                         </span>
-                        <span className="text-brand-sand">•</span>
                         <span className="text-[10px] font-bold text-brand-olive/50">{attempt.amount}</span>
+                        {attempt.photo && (
+                          <>
+                            <span className="text-brand-sand">•</span>
+                            <span className="text-[10px] font-bold text-brand-sage" title="יש תמונה">
+                              📸
+                            </span>
+                          </>
+                        )}
                       </div>
                     </div>
                     <div className={`absolute right-0 top-0 bottom-0 w-1 ${

@@ -6,12 +6,13 @@ import { getBabyAge, getRecommendedPhaseInfo } from '../utils/babyUtils';
 import { FoodCard } from './FoodCard';
 import { FoodListItem } from './FoodListItem';
 import { Baby, Search, ListFilter, LayoutGrid, List, Plus } from 'lucide-react';
+import { initialFoods } from '../data';
 
 interface FoodsViewProps {
   searchQuery: string;
   setSearchQuery: (query: string) => void;
-  sortOrder: 'name-asc' | 'name-desc' | 'status-tried' | 'status-untried' | 'completed';
-  setSortOrder: (order: 'name-asc' | 'name-desc' | 'status-tried' | 'status-untried' | 'completed') => void;
+  sortOrder: 'recommended' | 'name-asc' | 'name-desc' | 'status-tried' | 'status-untried' | 'completed';
+  setSortOrder: (order: 'recommended' | 'name-asc' | 'name-desc' | 'status-tried' | 'status-untried' | 'completed') => void;
   viewMode: 'grid' | 'list';
   setViewMode: (mode: 'grid' | 'list') => void;
   selectedCategory: Category | 'הכל' | 'רגישויות';
@@ -50,6 +51,13 @@ export const FoodsView: React.FC<FoodsViewProps> = ({
   // Sorting logic based on selected order
   filteredFoods = [...filteredFoods].sort((a, b) => {
     switch (sortOrder) {
+      case 'recommended': {
+        const indexA = initialFoods.findIndex(f => f.id === a.id);
+        const indexB = initialFoods.findIndex(f => f.id === b.id);
+        const valA = indexA === -1 ? 9999 : indexA;
+        const valB = indexB === -1 ? 9999 : indexB;
+        return valA - valB;
+      }
       case 'name-asc':
         return a.name.localeCompare(b.name, 'he');
       case 'name-desc':
@@ -108,10 +116,18 @@ export const FoodsView: React.FC<FoodsViewProps> = ({
             <div className="relative">
               <button 
                 onClick={() => setIsSortMenuOpen(!isSortMenuOpen)}
-                className={`p-2.5 rounded transition-all ${isSortMenuOpen ? 'bg-brand-sage text-white shadow-soft' : 'text-brand-olive/40 hover:text-brand-sage hover:bg-brand-cream'}`}
+                className={`flex items-center gap-1.5 px-3 py-2 rounded transition-all ${isSortMenuOpen ? 'bg-brand-sage text-white shadow-soft' : 'text-brand-olive/50 hover:text-brand-sage hover:bg-brand-cream'}`}
                 title="סינון ומיון"
               >
-                <ListFilter size={18} />
+                <ListFilter size={16} />
+                <span className="text-[11px] font-bold select-none">
+                  {sortOrder === 'recommended' && 'מומלץ'}
+                  {sortOrder === 'name-asc' && 'א-ת'}
+                  {sortOrder === 'name-desc' && 'ת-א'}
+                  {sortOrder === 'status-tried' && 'נוסה'}
+                  {sortOrder === 'status-untried' && 'טרם נוסה'}
+                  {sortOrder === 'completed' && 'הושלם'}
+                </span>
               </button>
 
               <AnimatePresence>
@@ -125,6 +141,7 @@ export const FoodsView: React.FC<FoodsViewProps> = ({
                       className="absolute left-0 top-full mt-2 w-48 bg-white rounded-lg shadow-xl border border-brand-sand z-50 p-1 overflow-hidden"
                     >
                       {[
+                        { id: 'recommended', label: 'סדר מומלץ (ברירת מחדל)', icon: '⭐' },
                         { id: 'name-asc', label: 'א-ת (אלפבית נורמלי)', icon: 'AZ' },
                         { id: 'name-desc', label: 'ת-א (אלפבית הפוך)', icon: 'ZA' },
                         { id: 'status-tried', label: 'נוסה תחילה', icon: '✔' },

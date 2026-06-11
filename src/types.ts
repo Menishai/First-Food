@@ -11,6 +11,7 @@ export interface Attempt {
   reaction: Reaction;
   preparation?: Preparation;
   notes?: string;
+  photo?: string;
 }
 
 export interface Profile {

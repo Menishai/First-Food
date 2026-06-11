@@ -47,7 +47,9 @@ export const FoodListItem: React.FC<FoodListItemProps> = ({ food, onClick }) => 
       whileHover={{ y: -1 }}
       whileTap={{ scale: 0.99 }}
       onClick={onClick}
-      className={`relative overflow-hidden flex items-center p-3.5 rounded-xl border text-right w-full gap-4 transition-all ${style.wrapper}`}
+      className={`relative overflow-hidden flex items-center p-3.5 rounded-xl border text-right w-full gap-4 transition-all ${style.wrapper} ${
+        food.isAllergen && food.status !== 'הושלם' ? 'border-amber-300 bg-amber-50/20' : ''
+      }`}
     >
       <div className="w-12 h-12 bg-brand-sand/50 rounded-lg overflow-hidden flex items-center justify-center text-2xl shrink-0 border border-brand-sand/30">
         {food.image ? (

@@ -93,6 +93,8 @@ export const initialFoods: FoodItem[] = [
   { id: 'f4', name: 'דלעת', icon: '🎃', category: 'ירקות', isAllergen: false, status: 'נעול', attempts: [], recommendedPhase: 1, servingSuggestion: "בישול במים או אידוי ומעיכה.", image: "/images/f4.jpg" },
   { id: 'f10', name: 'אבוקדו', icon: '🥑', category: 'ירקות', isAllergen: false, status: 'נעול', attempts: [], recommendedPhase: 1, servingSuggestion: "מעיכה במזלג (ללא בישול).", image: "/images/f10.jpg" },
   { id: 'f33', name: 'דלורית', icon: '🎃', category: 'ירקות', isAllergen: false, status: 'נעול', attempts: [], recommendedPhase: 1, servingSuggestion: "קילוף, סילוק גרעינים, אידוי או אפייה בתנור עד ריכוך מלא וטחינה.", image: "/images/f33.jpg" },
+  { id: 'f39', name: 'עגבנייה', icon: '🍅', category: 'ירקות', isAllergen: false, status: 'נעול', attempts: [], recommendedPhase: 1, servingSuggestion: "חליטה במים רותחים, קילוף הקליפה, הוצאת הזרעים וטחינה או ריסוק דק.", image: "/images/f39.jpg" },
+  { id: 'f44', name: 'מלפפון', icon: '🥒', category: 'ירקות', isAllergen: false, status: 'נעול', attempts: [], recommendedPhase: 1, servingSuggestion: "קילוף מלא, גירוד דק מאוד במגררת (פומפייה). לעולם לא להגיש פרוסות עגולות.", image: "/images/f44.jpg" },
   // פירות
   { id: 'f11', name: 'תפוח', icon: '🍎', category: 'פירות', isAllergen: false, status: 'נעול', attempts: [], recommendedPhase: 1, servingSuggestion: "אידוי קל וטחינה, או גרור דק מאוד.", image: "/images/f11.jpg" },
   { id: 'f12', name: 'אגס', icon: '🍐', category: 'פירות', isAllergen: false, status: 'נעול', attempts: [], recommendedPhase: 1, servingSuggestion: "קילוף וטחינה (בשלב מתקדם אפשר לגרד).", image: "/images/f12.jpg" },
@@ -113,6 +115,7 @@ export const initialFoods: FoodItem[] = [
   // תיבול
   { id: 's1', name: 'שורש פטרוזיליה', icon: '🌿', category: 'תיבול', isAllergen: false, status: 'נעול', attempts: [], recommendedPhase: 1, isAromaticOnly: true, servingSuggestion: "בישול בתוך המרק להענקת טעם והוצאה לפני הטחינה.", image: "/images/s1.jpg" },
   { id: 's2', name: 'שום', icon: '🧄', category: 'תיבול', isAllergen: false, status: 'נעול', attempts: [], recommendedPhase: 1, isAromaticOnly: true, servingSuggestion: "בישול שן שלמה והוצאתה.", image: "/images/s2.jpg" },
+  { id: 's5', name: 'בצל', icon: '🧅', category: 'תיבול', isAllergen: false, status: 'נעול', attempts: [], recommendedPhase: 1, isAromaticOnly: true, servingSuggestion: "בישול בתוך המרק להענקת טעם והוצאה לפני הטחינה.", image: "/images/s5.jpg" },
 
   // ==========================================
   // שלב 2 - התקדמות במרקמים
@@ -128,6 +131,8 @@ export const initialFoods: FoodItem[] = [
   { id: 'f16', name: 'מנגו', icon: '🥭', category: 'פירות', isAllergen: false, status: 'נעול', attempts: [], recommendedPhase: 2, servingSuggestion: "טחינה למחית חלקה.", image: "/images/f16.jpg" },
   { id: 'f17', name: 'פפאיה', icon: '🥭', category: 'פירות', isAllergen: false, status: 'נעול', attempts: [], recommendedPhase: 2, image: "/images/f17.jpg" },
   { id: 'f18', name: 'אפרסק', icon: '🍑', category: 'פירות', isAllergen: false, status: 'נעול', attempts: [], recommendedPhase: 2, image: "/images/f18.jpg" },
+  { id: 'f38', name: 'תות שדה', icon: '🍓', category: 'פירות', isAllergen: false, status: 'נעול', attempts: [], recommendedPhase: 2, servingSuggestion: "שטיפה יסודית, הסרת העלים הירוקים וטחינה למחית חלקה, או חיתוך לרבעים לאורך (למניעת חנק).", image: "/images/f38.jpg" },
+  { id: 'f43', name: 'תפוז', icon: '🍊', category: 'פירות', isAllergen: false, status: 'נעול', attempts: [], recommendedPhase: 2, servingSuggestion: "סחיטה למיץ טרי, או פילוט יסודי (הסרת הקליפה הלבנה והקרומים) וחיתוך לחתיכות קטנות.", image: "/images/f43.jpg" },
   // חלבונים
   { id: 'f19', name: 'עוף', icon: '🍗', category: 'חלבונים', isAllergen: false, status: 'נעול', attempts: [], recommendedPhase: 2, image: "/images/f19.jpg" },
   { id: 'f21', name: 'בקר', icon: '🥩', category: 'חלבונים', isAllergen: false, status: 'נעול', attempts: [], recommendedPhase: 2, servingSuggestion: "בישול ארוך וטחינה חלקה במיוחד.", image: "/images/f21.jpg" },
@@ -135,9 +140,12 @@ export const initialFoods: FoodItem[] = [
   { id: 'f26', name: 'ביצה', icon: '🥚', category: 'אלרגנים', isAllergen: true, status: 'נעול', attempts: [], recommendedPhase: 2, servingSuggestion: "ביצה קשה מבושלת היטב, טחונה בתוך מחית ירקות.", image: "/images/f26.jpg" },
   { id: 'f27', name: 'דג', icon: '🐟', category: 'אלרגנים', isAllergen: true, status: 'נעול', attempts: [], recommendedPhase: 2, image: "/images/f27.jpg" },
   { id: 'f32', name: 'סלמון', icon: '🐟', category: 'אלרגנים', isAllergen: true, status: 'נעול', attempts: [], recommendedPhase: 2, servingSuggestion: "בישול יסודי של הפילה, פירוק קפדני לווידוא היעדר עצמות ומעיכה דקה.", image: "/images/f32.jpg" },
+  { id: 'f40', name: 'גבינה לבנה', icon: '🥛', category: 'אלרגנים', isAllergen: true, status: 'נעול', attempts: [], recommendedPhase: 2, servingSuggestion: "הגשה של גבינה לבנה 5% או קוטג בכפית. מומלץ מגיל 9 חודשים.", image: "/images/f40.jpg" },
+  { id: 'f41', name: 'טופו (סויה)', icon: '🫘', category: 'אלרגנים', isAllergen: true, status: 'נעול', attempts: [], recommendedPhase: 2, servingSuggestion: "בישול או אידוי של טופו רך ומעיכה למרקם חלק או חיתוך לקוביות קטנות במיוחד.", image: "/images/f41.jpg" },
   // דגנים
   { id: 'f34', name: 'קינואה', icon: '🌾', category: 'דגנים', isAllergen: false, status: 'נעול', attempts: [], recommendedPhase: 2, servingSuggestion: "בישול יסודי במים עד ריכוך מלא ופתיחת הגרגרים, וטחינה או מעיכה.", image: "/images/f34.jpg" },
   { id: 'f37', name: 'גריסי פנינה', icon: '🌾', category: 'דגנים', isAllergen: false, status: 'נעול', attempts: [], recommendedPhase: 2, servingSuggestion: "בישול ארוך מאוד עד ריכוך מוחלט וטחינה חלקה.", image: "/images/f37.jpg" },
+  { id: 'f42', name: 'פסטה (חיטה)', icon: '🍝', category: 'דגנים', isAllergen: true, status: 'נעול', attempts: [], recommendedPhase: 2, servingSuggestion: "בישול פסטה קטנה (פתיתים/כוכבים) עד רכות יתרה, או חיתוך לחלקים קטנים מאוד.", image: "/images/f42.jpg" },
   // תיבול
   { id: 's3', name: 'כמון', icon: '🧂', category: 'תיבול', isAllergen: false, status: 'נעול', attempts: [], recommendedPhase: 2, isAromaticOnly: false, servingSuggestion: "הוספת קמצוץ קטן למחית ירקות או קטניות.", image: "/images/s3.jpg" },
   { id: 's4', name: 'קינמון', icon: '🪵', category: 'תיבול', isAllergen: false, status: 'נעול', attempts: [], recommendedPhase: 2, isAromaticOnly: false, servingSuggestion: "הוספת קמצוץ למחית פירות או דייסה.", image: "/images/s4.jpg" },

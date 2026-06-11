@@ -43,7 +43,9 @@ export const FoodCard: React.FC<FoodCardProps> = ({ food, onClick }) => {
       whileHover={{ y: -2 }}
       whileTap={{ scale: 0.98 }}
       onClick={onClick}
-      className={`relative overflow-hidden flex flex-col items-start p-4 rounded-xl border text-right w-full h-full transition-all ${style.wrapper}`}
+      className={`relative overflow-hidden flex flex-col items-start p-4 rounded-xl border text-right w-full h-full transition-all ${style.wrapper} ${
+        food.isAllergen && food.status !== 'הושלם' ? 'border-amber-300 bg-amber-50/20' : ''
+      }`}
     >
       {food.status === 'הושלם' && (
         <motion.div 
