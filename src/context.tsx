@@ -7,15 +7,28 @@ interface FoodContextType {
   activeProfileId: string;
   activeProfile: Profile;
   addProfile: (name: string) => void;
+  deleteProfile: (id: string) => void;
   switchProfile: (id: string) => void;
   updateActiveProfile: (data: Partial<Profile>) => void;
   foods: FoodItem[];
   addAttempt: (foodId: string, attempt: Omit<Attempt, 'id'>) => void;
+  editAttempt: (foodId: string, attemptId: string, updated: Partial<Attempt>) => void;
+  deleteAttempt: (foodId: string, attemptId: string) => void;
   addCustomFood: (name: string, category: Category, icon: string) => void;
+  deleteCustomFood: (foodId: string) => void;
   updateStatus: (foodId: string, status: Status) => void;
   acknowledgeAllergen: (foodId: string) => void;
   importBackupData: (jsonData: string) => boolean;
 }
+
+export const calculateFoodStatus = (attempts: Attempt[]): Status => {
+  if (attempts.length === 0) return 'נעול';
+  if (attempts.some(a => a.reaction === 'תגובה אלרגית')) return 'רגישות/תגובה';
+  const hasRefusal = attempts.some(a => a.reaction === 'סירב/ה');
+  const requiredAttempts = hasRefusal ? 4 : 3;
+  if (attempts.length >= requiredAttempts) return 'הושלם';
+  return 'בתהליך';
+};
 
 const FoodContext = createContext<FoodContextType | undefined>(undefined);
 
@@ -93,6 +106,15 @@ export const FoodProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setActiveProfileId(newProfile.id);
   };
 
+  const deleteProfile = (id: string) => {
+    if (profiles.length <= 1) return;
+    const remaining = profiles.filter(p => p.id !== id);
+    setProfiles(remaining);
+    if (activeProfileId === id) {
+      setActiveProfileId(remaining[0].id);
+    }
+  };
+
   const switchProfile = (id: string) => {
     setActiveProfileId(id);
   };
@@ -118,6 +140,10 @@ export const FoodProvider: React.FC<{ children: React.ReactNode }> = ({ children
     updateProfileFoods([newFood, ...foods]);
   };
 
+  const deleteCustomFood = (foodId: string) => {
+    updateProfileFoods(foods.filter(f => f.id !== foodId));
+  };
+
   const addAttempt = (foodId: string, attempt: Omit<Attempt, 'id'>) => {
     const newFoods = foods.map((food) => {
       if (food.id !== foodId) return food;
@@ -127,20 +153,36 @@ export const FoodProvider: React.FC<{ children: React.ReactNode }> = ({ children
         (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
       );
 
-      let newStatus = food.status;
-      
-      if (attempt.reaction === 'תגובה אלרגית') {
-        newStatus = 'רגישות/תגובה';
-      } else if (food.status === 'נעול' || food.status === 'בתהליך') {
-        const hasRefusal = updatedAttempts.some(a => a.reaction === 'סירב/ה');
-        const requiredAttempts = hasRefusal ? 4 : 3;
-        
-        if (updatedAttempts.length >= requiredAttempts && !updatedAttempts.some(a => a.reaction === 'תגובה אלרגית')) {
-          newStatus = 'הושלם';
-        } else {
-          newStatus = 'בתהליך';
-        }
-      }
+      const newStatus = calculateFoodStatus(updatedAttempts);
+
+      return { ...food, attempts: updatedAttempts, status: newStatus };
+    });
+    updateProfileFoods(newFoods);
+  };
+
+  const editAttempt = (foodId: string, attemptId: string, updated: Partial<Attempt>) => {
+    const newFoods = foods.map((food) => {
+      if (food.id !== foodId) return food;
+
+      const updatedAttempts = food.attempts.map((a) =>
+        a.id === attemptId ? { ...a, ...updated } : a
+      ).sort(
+        (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+      );
+
+      const newStatus = calculateFoodStatus(updatedAttempts);
+
+      return { ...food, attempts: updatedAttempts, status: newStatus };
+    });
+    updateProfileFoods(newFoods);
+  };
+
+  const deleteAttempt = (foodId: string, attemptId: string) => {
+    const newFoods = foods.map((food) => {
+      if (food.id !== foodId) return food;
+
+      const updatedAttempts = food.attempts.filter((a) => a.id !== attemptId);
+      const newStatus = calculateFoodStatus(updatedAttempts);
 
       return { ...food, attempts: updatedAttempts, status: newStatus };
     });
@@ -218,8 +260,8 @@ export const FoodProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   return (
     <FoodContext.Provider value={{
-      profiles, activeProfileId, activeProfile, addProfile, switchProfile, updateActiveProfile,
-      foods, addAttempt, addCustomFood, updateStatus, acknowledgeAllergen, importBackupData
+      profiles, activeProfileId, activeProfile, addProfile, deleteProfile, switchProfile, updateActiveProfile,
+      foods, addAttempt, editAttempt, deleteAttempt, addCustomFood, deleteCustomFood, updateStatus, acknowledgeAllergen, importBackupData
     }}>
       {children}
     </FoodContext.Provider>

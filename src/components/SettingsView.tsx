@@ -16,7 +16,8 @@ import {
   ChevronDown, 
   Bell, 
   Users, 
-  ChevronLeft 
+  ChevronLeft,
+  Trash2
 } from 'lucide-react';
 
 interface SettingsViewProps {
@@ -31,6 +32,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ setIsGuidelinesOpen 
     updateActiveProfile, 
     switchProfile, 
     addProfile, 
+    deleteProfile,
     importBackupData,
     foods
   } = useFoodContext();
@@ -478,18 +480,33 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ setIsGuidelinesOpen 
               <span className="text-[10px] font-bold text-brand-olive/40 uppercase tracking-wider">החלפת פרופיל</span>
               <div className="flex flex-col gap-2">
                 {profiles.map(p => (
-                  <button
-                    key={p.id}
-                    onClick={() => switchProfile(p.id)}
-                    className={`flex items-center justify-between p-3.5 rounded-xl border transition-all shadow-soft ${
-                      p.id === activeProfile?.id 
-                        ? 'bg-brand-cream border-brand-sage text-brand-sage font-bold' 
-                        : 'bg-white border-brand-sand/40 text-brand-olive/60 hover:bg-brand-cream hover:border-brand-sand'
-                    }`}
-                  >
-                    <span className="text-xs">{p.name}</span>
-                    {p.id === activeProfile?.id && <CheckCircle2 size={16} className="text-brand-sage" />}
-                  </button>
+                  <div key={p.id} className="flex items-center gap-2">
+                    <button
+                      onClick={() => switchProfile(p.id)}
+                      className={`flex-1 flex items-center justify-between p-3.5 rounded-xl border transition-all shadow-soft ${
+                        p.id === activeProfile?.id 
+                          ? 'bg-brand-cream border-brand-sage text-brand-sage font-bold' 
+                          : 'bg-white border-brand-sand/40 text-brand-olive/60 hover:bg-brand-cream hover:border-brand-sand'
+                      }`}
+                    >
+                      <span className="text-xs">{p.name}</span>
+                      {p.id === activeProfile?.id && <CheckCircle2 size={16} className="text-brand-sage" />}
+                    </button>
+                    {profiles.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (confirm(`האם למחוק את הפרופיל של "${p.name}"? כל הנתונים של פרופיל זה יימחקו לצמיתות.`)) {
+                            deleteProfile(p.id);
+                          }
+                        }}
+                        title="מחיקת פרופיל"
+                        className="p-3.5 rounded-xl border border-red-200 bg-red-50 text-red-600 hover:bg-red-100 transition-colors shadow-soft"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    )}
+                  </div>
                 ))}
                 
                 {isAddingProfile ? (

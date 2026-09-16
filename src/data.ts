@@ -140,8 +140,8 @@ export const initialFoods: FoodItem[] = [
   { id: 'f26', name: 'ביצה', icon: '🥚', category: 'אלרגנים', isAllergen: true, status: 'נעול', attempts: [], recommendedPhase: 2, servingSuggestion: "ביצה קשה מבושלת היטב, טחונה בתוך מחית ירקות.", image: "/images/f26.jpg" },
   { id: 'f27', name: 'דג', icon: '🐟', category: 'אלרגנים', isAllergen: true, status: 'נעול', attempts: [], recommendedPhase: 2, image: "/images/f27.jpg" },
   { id: 'f32', name: 'סלמון', icon: '🐟', category: 'אלרגנים', isAllergen: true, status: 'נעול', attempts: [], recommendedPhase: 2, servingSuggestion: "בישול יסודי של הפילה, פירוק קפדני לווידוא היעדר עצמות ומעיכה דקה.", image: "/images/f32.jpg" },
-  { id: 'f40', name: 'גבינה לבנה', icon: '🥛', category: 'אלרגנים', isAllergen: true, status: 'נעול', attempts: [], recommendedPhase: 2, servingSuggestion: "הגשה של גבינה לבנה 5% או קוטג בכפית. מומלץ מגיל 9 חודשים.", image: "/images/f40.jpg" },
   { id: 'f41', name: 'טופו (סויה)', icon: '🫘', category: 'אלרגנים', isAllergen: true, status: 'נעול', attempts: [], recommendedPhase: 2, servingSuggestion: "בישול או אידוי של טופו רך ומעיכה למרקם חלק או חיתוך לקוביות קטנות במיוחד.", image: "/images/f41.jpg" },
+  { id: 'f45', name: 'חמאת שקדים / אגוזים', icon: '🌰', category: 'אלרגנים', isAllergen: true, status: 'נעול', attempts: [], recommendedPhase: 2, servingSuggestion: 'חובה לדלל היטב במים חמימים, דייסה או מחית פירות עד מרקם נוזלי לחלוטין. אסור לתת במרקם סמיך או כגוש.', image: "/images/f45.jpg" },
   // דגנים
   { id: 'f34', name: 'קינואה', icon: '🌾', category: 'דגנים', isAllergen: false, status: 'נעול', attempts: [], recommendedPhase: 2, servingSuggestion: "בישול יסודי במים עד ריכוך מלא ופתיחת הגרגרים, וטחינה או מעיכה.", image: "/images/f34.jpg" },
   { id: 'f37', name: 'גריסי פנינה', icon: '🌾', category: 'דגנים', isAllergen: false, status: 'נעול', attempts: [], recommendedPhase: 2, servingSuggestion: "בישול ארוך מאוד עד ריכוך מוחלט וטחינה חלקה.", image: "/images/f37.jpg" },
@@ -151,9 +151,10 @@ export const initialFoods: FoodItem[] = [
   { id: 's4', name: 'קינמון', icon: '🪵', category: 'תיבול', isAllergen: false, status: 'נעול', attempts: [], recommendedPhase: 2, isAromaticOnly: false, servingSuggestion: "הוספת קמצוץ למחית פירות או דייסה.", image: "/images/s4.jpg" },
 
   // ==========================================
-  // שלב 3 - חשיפה מאוחרת
+  // שלב 3 - חשיפה מאוחרת (9-12 חודשים)
   // ==========================================
   { id: 'v8', name: 'סלק', icon: '🟣', category: 'ירקות', isAllergen: false, status: 'נעול', attempts: [], recommendedPhase: 3, servingSuggestion: "בישול ארוך עד ריכוך מלא וטחינה.", image: "/images/v8.jpg" },
-  { id: 'f28', name: 'חלב פרה', icon: '🥛', category: 'אלרגנים', isAllergen: true, status: 'נעול', attempts: [], recommendedPhase: 3, servingSuggestion: "שתיית חלב ניגר מומלצת מגיל שנה. מוצרי חלב החל מגיל 9 חודשים בהדרגה.", image: "/images/f28.jpg" },
-  { id: 'f35', name: 'יוגורט טבעי', icon: '🥛', category: 'אלרגנים', isAllergen: true, status: 'נעול', attempts: [], recommendedPhase: 3, servingSuggestion: "הגשת יוגורט טבעי ללא סוכר (7% שומן ומעלה) בכפית.", image: "/images/f35.jpg" }
+  { id: 'f40', name: 'גבינה לבנה', icon: '🥛', category: 'אלרגנים', isAllergen: true, status: 'נעול', attempts: [], recommendedPhase: 3, servingSuggestion: "הגשה של גבינה לבנה 5% או קוטג בכפית. מומלץ מגיל 9 חודשים.", image: "/images/f40.jpg" },
+  { id: 'f35', name: 'יוגורט טבעי', icon: '🥛', category: 'אלרגנים', isAllergen: true, status: 'נעול', attempts: [], recommendedPhase: 3, servingSuggestion: "הגשת יוגורט טבעי ללא סוכר (7% שומן ומעלה) בכפית.", image: "/images/f35.jpg" },
+  { id: 'f28', name: 'חלב פרה', icon: '🥛', category: 'אלרגנים', isAllergen: true, status: 'נעול', attempts: [], recommendedPhase: 3, servingSuggestion: "שתיית חלב ניגר מומלצת מגיל שנה. מוצרי חלב החל מגיל 9 חודשים בהדרגה.", image: "/images/f28.jpg" }
 ];

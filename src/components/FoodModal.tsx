@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, Plus, Calendar, AlertCircle, CheckCircle2, TrendingUp, ChevronDown, Share2, Image as ImageIcon, FileText, FileSpreadsheet, File, MessageCircle, Info } from 'lucide-react';
-import { FoodItem, Amount, Reaction, Preparation } from '../types';
+import { X, Plus, Calendar, AlertCircle, CheckCircle2, TrendingUp, ChevronDown, Share2, Image as ImageIcon, FileText, FileSpreadsheet, File, MessageCircle, Info, Edit3, Trash2 } from 'lucide-react';
+import { FoodItem, Amount, Reaction, Preparation, Attempt } from '../types';
 import { tipsData } from '../data';
 import { getScientificDetails } from '../data/foodDetails';
 import { useFoodContext } from '../context';
@@ -203,8 +203,10 @@ const resizeImage = (file: File): Promise<string> => {
   });
 };
 
-export const FoodModal: React.FC<FoodModalProps> = ({ food, onClose }) => {
-  const { foods, addAttempt, activeProfile, acknowledgeAllergen } = useFoodContext();
+export const FoodModal: React.FC<FoodModalProps> = ({ food: initialFood, onClose }) => {
+  const { foods, addAttempt, editAttempt, deleteAttempt, deleteCustomFood, activeProfile, acknowledgeAllergen } = useFoodContext();
+  const food = foods.find(f => f.id === initialFood.id) || initialFood;
+
   const [date, setDate] = useState(() => new Date().toISOString().split('T')[0]);
   const [amount, setAmount] = useState<Amount>('טעימה');
   const [reaction, setReaction] = useState<Reaction>('אהב/ה');
@@ -217,6 +219,15 @@ export const FoodModal: React.FC<FoodModalProps> = ({ food, onClose }) => {
   const [showShareMenu, setShowShareMenu] = useState(false);
   const [photo, setPhoto] = useState<string | undefined>(undefined);
   const [selectedLightboxImage, setSelectedLightboxImage] = useState<string | null>(null);
+
+  // Edit attempt states
+  const [editingAttemptId, setEditingAttemptId] = useState<string | null>(null);
+  const [editDate, setEditDate] = useState('');
+  const [editAmount, setEditAmount] = useState<Amount>('טעימה');
+  const [editReaction, setEditReaction] = useState<Reaction>('אהב/ה');
+  const [editPreparation, setEditPreparation] = useState<Preparation>('טחון');
+  const [editNotes, setEditNotes] = useState('');
+
   const modalRef = useRef<HTMLDivElement>(null);
   const shareCardRef = useRef<HTMLDivElement>(null);
   const photoInputRef = useRef<HTMLInputElement>(null);
@@ -233,6 +244,36 @@ export const FoodModal: React.FC<FoodModalProps> = ({ food, onClose }) => {
 
   const hasRefusal = food.attempts.some(a => a.reaction === 'סירב/ה');
   const requiredAttempts = hasRefusal ? 4 : 3;
+
+  const handleStartEdit = (attempt: Attempt) => {
+    setEditingAttemptId(attempt.id);
+    setEditDate(attempt.date);
+    setEditAmount(attempt.amount);
+    setEditReaction(attempt.reaction);
+    setEditPreparation(attempt.preparation || 'טחון');
+    setEditNotes(attempt.notes || '');
+  };
+
+  const handleSaveEdit = (attemptId: string) => {
+    editAttempt(food.id, attemptId, {
+      date: editDate,
+      amount: editAmount,
+      reaction: editReaction,
+      preparation: editPreparation,
+      notes: editNotes
+    });
+    setEditingAttemptId(null);
+  };
+
+  const handleCancelEdit = () => {
+    setEditingAttemptId(null);
+  };
+
+  const handleDeleteAttempt = (attemptId: string) => {
+    if (confirm('האם למחוק תיעוד טעימה זו? סטטוס המאכל יחושב מחדש.')) {
+      deleteAttempt(food.id, attemptId);
+    }
+  };
 
   const renderNotes = (text: string) => {
     const parts = text.split(/\*(.*?)\*/);
@@ -987,33 +1028,129 @@ export const FoodModal: React.FC<FoodModalProps> = ({ food, onClose }) => {
                                   </span>
                                 </div>
                               </div>
-                              <div className={`text-[10px] px-2 py-0.5 rounded font-bold uppercase tracking-wider flex items-center gap-0.5 shadow-soft border ${
-                                 attempt.reaction === 'אהב/ה' ? 'bg-brand-on-primary-container text-brand-sage border-brand-sage/10' :
-                                 attempt.reaction === 'תגובה אלרגית' ? 'bg-brand-blush/30 text-brand-charcoal border-brand-blush/40' :
-                                 attempt.reaction === 'סירב/ה' ? 'bg-brand-sand/50 text-brand-olive/50 border-brand-sand' :
-                                 'bg-brand-sand/80 text-brand-olive border-brand-sand'
-                              }`}>
-                                {attempt.reaction === 'אהב/ה' && <span className="text-[9px]">😍</span>}
-                                {attempt.reaction === 'ניטרלי' && <span className="text-[9px]">😐</span>}
-                                {attempt.reaction === 'סירב/ה' && <span className="text-[9px]">🙅</span>}
-                                {attempt.reaction === 'תגובה אלרגית' && <AlertCircle size={9} strokeWidth={3} />}
-                                <span>{attempt.reaction}</span>
+                              <div className="flex items-center gap-1.5">
+                                <div className={`text-[10px] px-2 py-0.5 rounded font-bold uppercase tracking-wider flex items-center gap-0.5 shadow-soft border ${
+                                   attempt.reaction === 'אהב/ה' ? 'bg-brand-on-primary-container text-brand-sage border-brand-sage/10' :
+                                   attempt.reaction === 'תגובה אלרגית' ? 'bg-brand-blush/30 text-brand-charcoal border-brand-blush/40' :
+                                   attempt.reaction === 'סירב/ה' ? 'bg-brand-sand/50 text-brand-olive/50 border-brand-sand' :
+                                   'bg-brand-sand/80 text-brand-olive border-brand-sand'
+                                }`}>
+                                  {attempt.reaction === 'אהב/ה' && <span className="text-[9px]">😍</span>}
+                                  {attempt.reaction === 'ניטרלי' && <span className="text-[9px]">😐</span>}
+                                  {attempt.reaction === 'סירב/ה' && <span className="text-[9px]">🙅</span>}
+                                  {attempt.reaction === 'תגובה אלרגית' && <AlertCircle size={9} strokeWidth={3} />}
+                                  <span>{attempt.reaction}</span>
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() => handleStartEdit(attempt)}
+                                  title="עריכת טעימה"
+                                  className="p-1 rounded text-brand-olive/40 hover:text-brand-sage hover:bg-brand-cream transition-colors"
+                                >
+                                  <Edit3 size={13} />
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleDeleteAttempt(attempt.id)}
+                                  title="מחיקת טעימה"
+                                  className="p-1 rounded text-brand-olive/40 hover:text-red-500 hover:bg-red-50 transition-colors"
+                                >
+                                  <Trash2 size={13} />
+                                </button>
                               </div>
                             </div>
-                            {attempt.photo && (
-                              <div className="mt-2 w-20 h-20 rounded-lg overflow-hidden border border-brand-sand shadow-soft cursor-pointer relative group active:scale-95 transition-all mb-2">
-                                <img 
-                                  src={attempt.photo} 
-                                  alt="טעימה" 
-                                  className="w-full h-full object-cover group-hover:scale-105 transition-transform" 
-                                  onClick={() => setSelectedLightboxImage(attempt.photo || null)}
-                                />
+
+                            {editingAttemptId === attempt.id ? (
+                              <div className="flex flex-col gap-2.5 mt-3 bg-brand-cream/30 p-3 rounded-lg border border-brand-sand/50 text-right">
+                                <div className="text-[10px] font-bold text-brand-sage uppercase tracking-wider">עריכת פרטי טעימה</div>
+                                <div className="grid grid-cols-2 gap-2">
+                                  <div className="flex flex-col gap-1">
+                                    <label className="text-[9px] font-bold text-brand-olive/50">תאריך</label>
+                                    <input 
+                                      type="date" 
+                                      value={editDate} 
+                                      onChange={(e) => setEditDate(e.target.value)} 
+                                      className="p-1.5 bg-white border border-brand-sand rounded text-xs text-brand-olive outline-none"
+                                    />
+                                  </div>
+                                  <div className="flex flex-col gap-1">
+                                    <label className="text-[9px] font-bold text-brand-olive/50">כמות</label>
+                                    <select 
+                                      value={editAmount} 
+                                      onChange={(e) => setEditAmount(e.target.value as Amount)} 
+                                      className="p-1.5 bg-white border border-brand-sand rounded text-xs text-brand-olive outline-none"
+                                    >
+                                      {amounts.map(a => <option key={a} value={a}>{amountIcons[a]} {a}</option>)}
+                                    </select>
+                                  </div>
+                                </div>
+                                <div className="grid grid-cols-2 gap-2">
+                                  <div className="flex flex-col gap-1">
+                                    <label className="text-[9px] font-bold text-brand-olive/50">תגובה</label>
+                                    <select 
+                                      value={editReaction} 
+                                      onChange={(e) => setEditReaction(e.target.value as Reaction)} 
+                                      className="p-1.5 bg-white border border-brand-sand rounded text-xs text-brand-olive outline-none"
+                                    >
+                                      {reactions.map(r => <option key={r} value={r}>{r}</option>)}
+                                    </select>
+                                  </div>
+                                  <div className="flex flex-col gap-1">
+                                    <label className="text-[9px] font-bold text-brand-olive/50">צורת הגשה</label>
+                                    <select 
+                                      value={editPreparation} 
+                                      onChange={(e) => setEditPreparation(e.target.value as Preparation)} 
+                                      className="p-1.5 bg-white border border-brand-sand rounded text-xs text-brand-olive outline-none"
+                                    >
+                                      {preparations.map(p => <option key={p} value={p}>{p}</option>)}
+                                    </select>
+                                  </div>
+                                </div>
+                                <div className="flex flex-col gap-1">
+                                  <label className="text-[9px] font-bold text-brand-olive/50">הערות</label>
+                                  <input 
+                                    type="text" 
+                                    value={editNotes} 
+                                    onChange={(e) => setEditNotes(e.target.value)} 
+                                    className="p-1.5 bg-white border border-brand-sand rounded text-xs text-brand-olive outline-none"
+                                    placeholder="הערות..."
+                                  />
+                                </div>
+                                <div className="flex gap-2 mt-1">
+                                  <button 
+                                    type="button" 
+                                    onClick={() => handleSaveEdit(attempt.id)} 
+                                    className="flex-1 bg-brand-sage text-white py-1.5 rounded text-xs font-bold hover:bg-brand-sage/90 transition-colors shadow-soft"
+                                  >
+                                    שמירה
+                                  </button>
+                                  <button 
+                                    type="button" 
+                                    onClick={handleCancelEdit} 
+                                    className="flex-1 bg-brand-cream border border-brand-sand text-brand-olive/60 py-1.5 rounded text-xs font-bold hover:bg-brand-cream/80 transition-colors"
+                                  >
+                                    ביטול
+                                  </button>
+                                </div>
                               </div>
-                            )}
-                            {attempt.notes && (
-                              <div className="text-xs text-brand-olive/80 mt-2 bg-brand-cream/30 p-2.5 rounded-lg italic font-medium leading-relaxed border border-brand-sand/30">
-                                {renderNotes(attempt.notes)}
-                              </div>
+                            ) : (
+                              <>
+                                {attempt.photo && (
+                                  <div className="mt-2 w-20 h-20 rounded-lg overflow-hidden border border-brand-sand shadow-soft cursor-pointer relative group active:scale-95 transition-all mb-2">
+                                    <img 
+                                      src={attempt.photo} 
+                                      alt="טעימה" 
+                                      className="w-full h-full object-cover group-hover:scale-105 transition-transform" 
+                                      onClick={() => setSelectedLightboxImage(attempt.photo || null)}
+                                    />
+                                  </div>
+                                )}
+                                {attempt.notes && (
+                                  <div className="text-xs text-brand-olive/80 mt-2 bg-brand-cream/30 p-2.5 rounded-lg italic font-medium leading-relaxed border border-brand-sand/30">
+                                    {renderNotes(attempt.notes)}
+                                  </div>
+                                )}
+                              </>
                             )}
                           </div>
                         </div>
@@ -1022,6 +1159,24 @@ export const FoodModal: React.FC<FoodModalProps> = ({ food, onClose }) => {
                   </div>
                 </div>
               )}
+            </div>
+          )}
+
+          {food.id.startsWith('custom-') && (
+            <div className="pt-4 mt-2 border-t border-brand-sand/40 flex justify-center pb-2">
+              <button
+                type="button"
+                onClick={() => {
+                  if (confirm(`האם למחוק את המאכל המותאם "${food.name}"? כל הטעימות שלו יימחקו לצמיתות.`)) {
+                    deleteCustomFood(food.id);
+                    onClose();
+                  }
+                }}
+                className="flex items-center gap-1.5 px-4 py-2 rounded-xl border border-red-200 bg-red-50 text-red-600 hover:bg-red-100 transition-colors text-xs font-bold shadow-soft"
+              >
+                <Trash2 size={14} />
+                <span>מחיקת מאכל מותאם אישית</span>
+              </button>
             </div>
           )}
             </motion.div>

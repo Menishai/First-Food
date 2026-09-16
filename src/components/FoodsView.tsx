@@ -35,14 +35,25 @@ export const FoodsView: React.FC<FoodsViewProps> = ({
 }) => {
   const { foods, activeProfile } = useFoodContext();
   const [isSortMenuOpen, setIsSortMenuOpen] = useState(false);
+  const [selectedStage, setSelectedStage] = useState<'all' | 1 | 2 | 3>('all');
 
   const categories: (Category | 'הכל' | 'רגישויות')[] = ['הכל', 'ירקות', 'פירות', 'חלבונים', 'אלרגנים', 'דגנים', 'תיבול', 'רגישויות'];
+  const stages: { id: 'all' | 1 | 2 | 3; label: string; badge?: string }[] = [
+    { id: 'all', label: 'כל השלבים' },
+    { id: 1, label: 'שלב 1', badge: '6+ חודשים' },
+    { id: 2, label: 'שלב 2', badge: '7-8 חודשים' },
+    { id: 3, label: 'שלב 3', badge: '9-12 חודשים' },
+  ];
 
   let filteredFoods = selectedCategory === 'הכל' 
     ? foods 
     : selectedCategory === 'רגישויות'
       ? foods.filter(f => f.status === 'רגישות/תגובה')
       : foods.filter(f => f.category === selectedCategory);
+
+  if (selectedStage !== 'all') {
+    filteredFoods = filteredFoods.filter(f => f.recommendedPhase === selectedStage);
+  }
 
   if (searchQuery.trim()) {
     filteredFoods = filteredFoods.filter(f => f.name.includes(searchQuery.trim()));
@@ -183,6 +194,34 @@ export const FoodsView: React.FC<FoodsViewProps> = ({
               <List size={18} />
             </button>
           </div>
+        </div>
+
+        {/* Stage Filter Tabs */}
+        <div className="flex gap-2 overflow-x-auto pb-1 no-scrollbar shrink-0 snap-x">
+          {stages.map((st) => {
+            const isSelected = selectedStage === st.id;
+            return (
+              <button
+                key={st.id}
+                type="button"
+                onClick={() => setSelectedStage(st.id)}
+                className={`whitespace-nowrap px-4 py-2 rounded-xl text-xs font-bold transition-all border snap-start flex items-center gap-1.5 shadow-soft ${
+                  isSelected 
+                    ? 'bg-brand-sage text-white border-brand-sage' 
+                    : 'bg-white text-brand-olive/70 border-brand-sand/60 hover:bg-brand-cream/60'
+                }`}
+              >
+                <span>{st.label}</span>
+                {st.badge && (
+                  <span className={`text-[10px] px-1.5 py-0.5 rounded font-semibold ${
+                    isSelected ? 'bg-white/20 text-white' : 'bg-brand-sand/40 text-brand-olive/60'
+                  }`}>
+                    {st.badge}
+                  </span>
+                )}
+              </button>
+            );
+          })}
         </div>
 
         <div className="flex gap-2 overflow-x-auto pb-2 no-scrollbar shrink-0 snap-x">
